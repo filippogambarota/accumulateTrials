@@ -1,0 +1,752 @@
+---
+title: "'The More the Trials, the Stronger the Effect'.  Fact or Myth?  Evidence from Classical Experimental Psychology Paradigms"
+shorttitle: "The More the Trials, the Stronger the Effect"
+author:
+  - name: Giovanni Bruno
+    corresponding: true
+    orcid: 0000-0002-2526-880X
+    email: giovanni.bruno.2@unipd.it
+    affiliations:
+      - name: University of Padova
+        department: Department of General Psychology
+        address: Via Venezia 8
+        city: Padova
+        region: PD
+        postal-code: 35131
+  - name: Filippo Gambarota
+    orcid: 0000-0002-6666-1747
+    email: filippo.gambarota@unipd.it
+    affiliations:
+      - name: University of Padova
+        department: Department of Developmental and Social Psychology
+  - name: Roberta Sellaro
+    orcid: 0000-0003-2316-9936
+    email: roberta.sellaro@unipd.it
+    affiliations:
+      - name: University of Padova
+        department: Department of Developmental and Social Psychology
+  - name: Arianna Schiano Lomoriello
+    orcid: 0000-0003-4521-0450
+    email: arianna.schiano@unipd.it
+    affiliations:
+      - name: University of Padova
+        department: Department of Developmental and Social Psychology
+  - name: Simone Cutini
+    orcid: 0000-0001-6332-3219
+    email: simone.cutini@unipd.it
+    affiliations:
+      - name: University of Padova
+        department: Department of Developmental and Social Psychology
+abstract: "This is my abstract."
+keywords: [keyword1, keyword2]
+author-note:
+  disclosures:
+    conflict of interest: The author has no conflict of interest to declare.
+bibliography: references.bib
+format:
+    apaquarto-pdf:
+      floatsintext: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+#| message: false
+#| warning: false
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(here)
+library(lme4)
+library(emmeans)
+library(patchwork)
+library(latex2exp)
+library(flextable)
+library(stringr)
+devtools::load_all()
+
+data(simon)
+data(snarc)
+data(tswitch)
+
+tasks <- list(simon = simon, snarc = snarc, tswitch = tswitch)
+taskd <- bind_rows(tasks, .id = "task")
+
+clean_task <- function(data) {
+  data |>
+    filter(correct == 1) |>
+    drop_na(congruence)
+}
+
+task_labels <- c(
+  simon = "Simon",
+  snarc = "SNARC",
+  tswitch = "Task-switching"
+)
+
+condition_labels <- function(task, congruence) {
+  case_when(
+    task == "tswitch" & congruence == "i" ~ "Switch",
+    task == "tswitch" & congruence == "c" ~ "Non-switch",
+    congruence == "i" ~ "Incongruent",
+    congruence == "c" ~ "Congruent"
+  )
+}
+
+# Common plot settings ------------------------------------------------------
+
+plot_base_size <- 11
+
+plot_lwd <- 0.65
+plot_lwd_strong <- 0.80
+plot_lwd_ref <- 0.45
+
+point_size <- 1.25
+point_alpha <- 0.35
+line_alpha <- 0.85
+ribbon_alpha <- 0.22
+
+common_theme <- function(base_size = plot_base_size) {
+  theme_minimal(base_size = base_size) +
+    theme(
+      text = element_text(size = base_size),
+
+      axis.title = element_text(face = "bold", size = base_size + 1),
+      axis.text = element_text(size = base_size - 1),
+
+      strip.text = element_text(face = "bold", size = base_size),
+      strip.background = element_rect(fill = "grey92", color = NA),
+
+      plot.title = element_text(
+        face = "bold",
+        size = base_size + 2,
+        hjust = 0.5,
+        margin = margin(b = 8)
+      ),
+      plot.subtitle = element_text(
+        size = base_size,
+        hjust = 0.5,
+        margin = margin(b = 8)
+      ),
+      plot.caption = element_text(size = base_size - 2, hjust = 0),
+
+      legend.title = element_blank(),
+      legend.text = element_text(size = base_size - 1),
+      legend.position = "bottom",
+
+      panel.grid.minor = element_blank(),
+      panel.grid.major = element_line(linewidth = 0.25),
+      panel.spacing = grid::unit(1.1, "lines"),
+
+      plot.margin = margin(6, 6, 6, 6)
+    )
+}
+
+theme_set(common_theme())
+
+update_geom_defaults("line", list(linewidth = plot_lwd, alpha = line_alpha))
+update_geom_defaults("smooth", list(linewidth = plot_lwd_strong))
+update_geom_defaults("point", list(size = point_size, alpha = point_alpha))
+update_geom_defaults("ribbon", list(alpha = ribbon_alpha, colour = NA))
+update_geom_defaults("boxplot", list(linewidth = plot_lwd_ref, outlier.size = 1.1))
+
+geom_paper_line <- function(..., linewidth = plot_lwd_strong, alpha = line_alpha) {
+  geom_line(..., linewidth = linewidth, alpha = alpha)
+}
+
+geom_paper_ribbon <- function(..., alpha = ribbon_alpha) {
+  geom_ribbon(..., alpha = alpha, colour = NA)
+}
+
+geom_paper_hline <- function(yintercept = 0, ...) {
+  geom_hline(
+    yintercept = yintercept,
+    linewidth = plot_lwd_ref,
+    linetype = "dashed",
+    ...
+  )
+}
+
+geom_paper_point <- function(..., size = point_size, alpha = point_alpha) {
+  geom_point(..., size = size, alpha = alpha)
+}
+
+knitr::opts_chunk$set(
+  echo = FALSE,
+  fig.align = "center",
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 7.2,
+  fig.height = 4.8,
+  dpi = 300,
+  out.width = "100%"
+)
+```
+
+```{r}
+#| label: load-results
+#| include: false
+#| cache: true
+
+tasks_cum <- readRDS(here::here("objects", "task_cum.rds"))
+res_resampling <- readRDS(here::here("objects", "task_resampling_lt.rds"))
+```
+
+# Introduction
+
+The movement addressing the replicability crisis in psychological science has shed new light on the need to test and improve research practices [@Anvari2018-ey; @Open-Science-Collaboration2015-al]. Educating new researchers to counter Questionable Research Practices (QRPs; e.g., @Fiedler2016-gg) is of fundamental importance for raising awareness within the scientific community, improving the quality of research, and restoring trust in scientific findings [e.g., @Asendorpf2013-ls; @Hendriks2016-cd; @Hendriks2020-ve]. In this context, renewed attention has been given to the importance of designing careful and thorough study plans; among the key issues discussed, statistical power has gained increasing prominence [@Anderson2017-vb; @Vankelecom2025-kz]. Greater awareness of the detrimental impact of underpowered studies [@Ioannidis2005-ya; @Francis2012-tj] has shown that this issue is not only a matter of statistical methodology [e.g., @Giner-Sorolla2024-fk], but also that underpowered studies negatively affect resource management (time, funding, participant availability) and may increase the temptation to engage in QRPs [@Ferguson2012-jm].
+
+Given a specific experimental design and research hypothesis, four parameters are needed for power analysis: $\alpha$-level (i.e., Type I-error risk), population effect size, sample size, and power (i.e., the likelihood of detecting an effect if it truly exists). In order to determine one of those, the remaining three have to be known or estimated [@Cohen1988-rx]. For example, sample-size determination analysis (i.e., a priori; @Giner-Sorolla2024-fk) returns a target sample size given a desired $\alpha$-level and power, and the required effect size, which is a feature of the investigated phenomenon given the research design. In other words, this procedure returns the minimum sample size given the effect size. While the advantage of this procedure is clear, in practice it is difficult to use accurately, since power is determined by the unknown population effect size, and the need to input a “reasonable” effect size when this is poorly known may lead to misinterpretation and QRPs. This discussion is described in greater detail by @Giner-Sorolla2024-fk.
+
+A common practical workaround is to derive the expected effect size from prior literature, especially when the phenomenon of interest has already been shown to be robust across studies. In psychology, limited effects have accumulated enough empirical support to be considered relatively stable, and these estimates are often used as benchmarks for planning new studies. However, even when an effect is well established, its estimated magnitude is not independent of the way the study is designed and analyzed. In particular, the same phenomenon can yield different effect size estimates in between- and within-subjects designs, because the two approaches differ in how variability is handled and, consequently, in how the standard error is computed.
+
+In between-subjects designs, the effect is typically standardized against the variability observed across independent participants, so the standard error reflects both true individual differences and measurement noise. In repeated-measures designs, by contrast, each participant serves as their own control, and the relevant error term is often reduced because stable between-person variability is removed from the comparison. As a result, repeated observations can substantially improve precision, but only up to the point at which additional trials mainly add redundancy rather than new information. This distinction is especially important in experimental psychology, where researchers may be tempted to assume that increasing the number of trials will mechanically increase the observed effect size, when in fact trial accumulation primarily affects the precision of the estimate, and may also interact with time-dependent changes in performance [@Baker2021-nn; @Miller2024-xz].
+
+A useful illustration comes from the literature on the Spatial Numerical Association of Response Codes (SNARC) effect [@Viarouge2014-yp]. The SNARC effect is among the most robust findings in numerical cognition and reflects faster left-sided responses to relatively small numbers and faster right-sided responses to relatively large numbers. Importantly, meta-analytic work has shown that its magnitude varies systematically with task demands, response modality, average response latencies, and participant characteristics, including age [@de-Oliveira-Wood2008-ge]. This makes the SNARC effect a useful example of a stable psychological phenomenon whose observed size is nevertheless contingent on how the task is designed and how responses are sampled over time [@Bonato2012-iz; @de-Oliveira-Wood2008-ge].
+
+In this sense, increasing the number of trials may improve the precision with which the SNARC effect is estimated, but it does not imply that the effect is invariant across all repeated observations. On the contrary, if later trials differ from earlier ones because of learning, fatigue, or changing strategies, the effect estimate may change as a function of trial accumulation rather than simply become more precise. This issue is not merely technical. If the magnitude of the effect remains stable while its standard error decreases, then increasing the number of trials is beneficial because it improves inferential precision. However, if the effect itself changes across trials because of unknown and more or less unpredictable motives (e.g., fatigue, learning, adaptation, or strategic shifts), then additional trials may alter the estimate of the phenomenon rather than simply refine it. In this sense, repeated-measures designs raise a specific planning problem that is not captured by standard power calculations based only on participant number: researchers must also consider whether the effect is expected to remain constant over the course of the task, and whether trial-level accumulation genuinely improves estimation or instead introduces temporal heterogeneity [@Mangin2022-ed; @Jangraw2023-yd; @Bowling2022-ch].
+
+In principle, effect size is a property of the underlying phenomenon and does not depend on sample size or the number of trials; it indexes the magnitude of an effect rather than its statistical significance [@Berben2012-dx]. However, the estimated effect size obtained from sample data can vary with trial structure, especially in repeated-measures settings where responses are aggregated across multiple observations. @Brand2011-hm showed through Monte Carlo simulations that increasing the number of trials can substantially inflate observed standardized effect size estimates when trial-to-trial correlations are modest or low, even though the true effect remains unchanged. Thus, more trials may improve reliability and power, but they do not guarantee an unbiased estimate of effect size unless the dependence among repeated observations is taken into account.
+
+In this discussion, a related but distinct issue concerns how the number of trials affects statistical power and effect estimation in repeated-measures paradigms. In principle, increasing the number of trials should improve precision by reducing within-participant error, but this benefit depends on the relative magnitude of within- and between-participant variance, as well as on whether the target effect remains stable across the course of the task. Using power contour plots, @Baker2021-nn showed that power is jointly determined by sample size and number of trials, and that the advantage of adding trials becomes substantial only when within-participant variance is sufficiently large relative to between-participant variance. Importantly, they also showed that the optimal balance between participants and trials is task-dependent, because some paradigms benefit from more trials while others reach an asymptote beyond which additional repetitions add little to statistical power. Extending this logic, @Miller2024-xz argued that the conventional assumption that more trials are always better is too simplistic for reaction-time paradigms, because the optimal number of trials depends on the relative sizes of person-to-person variability, trial-to-trial noise, and practice-related changes in performance. Through simulations based on large reaction-time datasets, @Miller2024-xz showed that, for most effects, power was greater when trials were spread across more participants rather than concentrated within fewer participants, although the optimal trade-off depended on the specific effect and on how it evolved with practice. This is especially relevant for classical experimental paradigms, in which trial accumulation may not only reduce measurement error but also interact with learning, adaptation, fatigue, or strategy shifts.
+
+Taken together, these studies suggest that the planning of repeated-measures experiments should not rely on participant number alone, nor on the assumption that increasing trial number mechanically improves inference. Instead, researchers should consider whether the effect of interest is stable across the task, whether additional trials primarily reduce standard error or also change the effect estimate itself, and whether the expected benefit of more trials outweighs the cost in time and participant burden. In the present work, we examine this issue directly, taking advantage of three classical paradigms—Simon, SNARC, and task switching—asking whether observed effects and their precision continue to improve as trials accumulate, or whether they instead plateau or drift over time.
+
+# Method
+
+The starting point is formalized in @eq-mod where the reaction times in the three experiments are expressed as a function of fixed and random effects.
+
+$$
+\begin{aligned}
+RT_{ij} &=
+\beta_0
++
+\beta_1 x_{ij}
++
+u_{0i}
++
+u_{1i}x_{ij}
++
+\varepsilon_{ij},
+\\[0.75em]
+\begin{pmatrix}
+u_{0i}\\
+u_{1i}
+\end{pmatrix}
+&\sim
+\mathcal{N}
+\left[
+\begin{pmatrix}
+0\\
+0
+\end{pmatrix},
+\begin{pmatrix}
+\sigma^2_{P} & \sigma_{P,P\times C}\\
+\sigma_{P,P\times C} & \sigma^2_{P\times C}
+\end{pmatrix}
+\right],
+\\[0.75em]
+\varepsilon_{ij}
+&\sim
+\mathcal{N}(0,\sigma^2_E).
+\end{aligned}
+$${#eq-mod}
+
+The reaction time $RT_{ij}$ for participant $i$ on trial $j$ is modeled as a function of the congruency condition $x_{ij}$. Using sum-to-zero coding, with $x_{ij} \in {-0.5,+0.5}$, $\beta_0$ represents the grand mean reaction time, whereas $\beta_1$ represents the fixed effect of condition. The random intercept $u_{0i}$ captures between-participant differences in overall reaction time, whereas the random slope $u_{1i}$ captures between-participant heterogeneity in the condition effect. The residual term $\varepsilon_{ij}$ captures trial-level variability not explained by the fixed or random effects. The random effects $u_{0i}$ and $u_{1i}$ are assumed to follow a multivariate normal distribution, with variances $\sigma^2_{P}$ and $\sigma^2_{P \times C}$, respectively, and covariance $\sigma_{P, P \times C}$. This follows the formalization proposed by @Westfall2014-im to decompose the total variance in mixed-effects models. The the total variability in reaction times is the sum of all the variance components $\sigma^2_T = \sigma^2_P + \sigma^2_{P \times C} + \sigma^2_E$. It should be noted that this is only one possible statistical model; other options could be considered, such as transformations of reaction times (e.g., log-transformation) or generalized linear mixed-effects models.
+
+Statistical inference can be performed calculating a test statistics in the form of $t = \hat{\beta}_1 / \sqrt{\text{SE}_{\beta_1}}$. The standard error of the test statistics depends on the total variability as defined above. The @eq-se-b illustrate a general definition of the standard error (using the contrast coding introduced above) for the congruency effect ($\beta_1$) parameter. In the equation, $k$ is the number of trials, $n$ is the number of subjects, $\sigma^2_{P \times C}$ is the variability in the congruency effect and $\sigma_E^2$ is the residual variance.
+
+$$
+\mathrm{SE}_{\beta_1}
+=
+\sqrt{
+\frac{\sigma^2_{P \times C}}{n}
++
+\frac{2\sigma_E^2}{nk}
+}
+$${#eq-se-b}
+
+Finally, we can calculate a standardized effect size measure $d$ where the raw difference between the two conditions $\hat \beta_1$ is standardized using the total variability $\sigma^2_T$ [@Westfall2014-im; @Brysbaert2018-wp]. Notice that this is only one of the posssibile definition of a standardized effect size measure in the context of repeated-measure designs.
+
+<!-- TODO explain 0.25 in some ways, check if worth writing the general equation -->
+
+$$
+d
+=
+\frac{\hat \beta_1}
+{
+\sqrt{
+\sigma_P^2
++
+0.25\sigma^2_{P\times C}
++
+\sigma_E^2
+}
+}.
+$${#eq-d-total}
+
+## Trial accumulation and non-stationarity
+
+The equations above make clear that effect size, standard error, and test statistics are jointly determined by the raw difference between the two conditions and by the variability of each model component. The mixed-effects model in @eq-mod treats fixed effects and variance components as stationary across the experiment. Unless time or trial order is modeled explicitly, all components are assumed to be stable across trials. In practice, fatigue, habituation, learning, adaptation, or strategy shifts may affect either the estimated condition effect or the variance components. We therefore indexed each element by $m$, denoting the cumulative number of trials included in the analysis for each participant. For example, $\beta_1(m)$ with $m = 30$ is the raw difference between conditions estimated from the first 30 total trials for each participant. The @eq-t-se-m depicts the cumulative test statistics and the standard error. The equation assume that for the $m$ trials the two conditions are balanced.
+
+$$
+\begin{gathered}
+t(m)
+=
+\frac{\hat{\beta}_1(m)}
+{\mathrm{SE}_{\hat{\beta}_1}(m)},
+\\[1em]
+\mathrm{SE}_{\hat{\beta}_1}(m)
+=
+\sqrt{
+\frac{\sigma^2_{P \times C}(m)}{n}
++
+\frac{4\sigma_E^2(m)}{nm}
+}
+\end{gathered}
+$${#eq-t-se-m}
+
+Similarly we can define also the cumulative effect size in the @eq-d-m. The key point is that if the true effect or any variance component is not stationary, then trial accumulation should be evaluated as a temporal process rather than as a simple increase in $k$. @fig-b-pattern-example illustrates three possible cumulative trajectories: an effect that emerges and stabilizes, an effect that remains stable while uncertainty decreases, and an effect that changes systematically as additional trials are included.
+
+$$
+d(m)
+=
+\frac{\hat \beta_1(m)}
+{
+\sqrt{
+\sigma_P^2(m)
++
+0.25\sigma^2_{P\times C}(m)
++
+\sigma_E^2(m)
+}
+}.
+$${#eq-d-m}
+
+```{r}
+#| label: fig-b-pattern-example
+#| fig-cap: Schematic illustration of possible trial-accumulation patterns. The solid line represents the cumulative estimated effect in milliseconds, and the shaded region represents illustrative uncertainty. Trial accumulation may reveal an effect that emerges and stabilizes, an effect that remains stable while precision increases, or an effect whose magnitude changes systematically as additional trials are included.
+
+make_illustrative_ms_plot <- function(k_max = 100) {
+  trial <- 1:k_max
+
+  plateau <- function(x, start, asymptote, rate) {
+    asymptote - (asymptote - start) * exp(-rate * x)
+  }
+
+  s1_effect <- plateau(trial, start = 8, asymptote = 28, rate = 0.045)
+  s1_band <- plateau(trial, start = 18, asymptote = 6, rate = 0.030)
+
+  s2_effect <- rep(22, k_max) + 1.5 * sin(trial / 18)
+  s2_band <- plateau(trial, start = 15, asymptote = 5, rate = 0.025)
+
+  s3_effect <- plateau(trial, start = 35, asymptote = 8, rate = 0.018)
+  s3_band <- plateau(trial, start = 16, asymptote = 5, rate = 0.020)
+
+  bind_rows(
+    tibble(
+      trial = trial,
+      estimate = s1_effect,
+      lower = s1_effect - s1_band,
+      upper = s1_effect + s1_band,
+      scenario = "A. Effect plateau"
+    ),
+    tibble(
+      trial = trial,
+      estimate = s2_effect,
+      lower = s2_effect - s2_band,
+      upper = s2_effect + s2_band,
+      scenario = "B. Stable effect"
+    ),
+    tibble(
+      trial = trial,
+      estimate = s3_effect,
+      lower = s3_effect - s3_band,
+      upper = s3_effect + s3_band,
+      scenario = "C. Effect declines"
+    )
+  )
+}
+
+make_illustrative_ms_plot(k_max = 120) |>
+  ggplot(aes(x = trial, y = estimate)) +
+  geom_paper_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.18) +
+  geom_paper_line(linewidth = plot_lwd_strong) +
+  geom_paper_hline(0) +
+  facet_wrap(~ scenario, ncol = 3) +
+  labs(
+    x = "Trials accumulated",
+    y = "Estimated effect (ms)"
+  )
+```
+
+## Cumulative modelling strategy
+
+To examine the progressive impact of adding trials, we used a cumulative modelling approach. We re-fitted thesame mixed-effects model (see @eq-mod) progressively adding consecutive trials. This strategy avoid including trial as a fixed effect with the risk of assuming a certain parametric shape (e.g., linear or quadratic) or using complex splines. In addition, we are able to have the cumulative effect of any fixed or random model component.
+
+We started by setting $m = 32$ as the first block of trials because congruent and incongruent trials were sufficiently balanced. Then we added $m = 5$ trials progressively until the final step with the complete experiment. 
+
+We conducted the analysis using Models were fitted using the `lme4` [@Bates2015-wx] package through the `lmer` function. For each cumulative trial subset, we fitted a Gaussian linear mixed-effects model including congruency as a fixed effect, random intercepts for participants, and by-participant random slopes for congruency. Congruency was coded using centered contrast coding ($-0.5$, $0.5$), so that the fixed-effect estimate $\beta_1$ directly represents the mean difference between incongruent and congruent trials.
+
+This model specification allowed us to estimate, for each cumulative trial subset $m$, the fixed effect $\hat{\beta}_1(m)$ together with the variance components entering the standardized effect-size calculation. Because our aim was to evaluate the cumulative evolution of these quantities while preserving their interpretation on the original reaction-time scale, we used raw reaction times in a Gaussian mixed-effects framework rather than applying a log-transformation or using a generalized linear mixed-effects model as the main analysis. A log-transformation would place fixed effects and variance components on the log-RT scale, making the variance decomposition less directly interpretable in milliseconds. Similarly, in generalized linear mixed-effects models, the residual variance is not estimated as a free variance component on the response scale, and variance decomposition depends on the assumed mean–variance relationship and link function. Therefore, a Gaussian model on raw reaction times was used to keep the fixed effect and all variance components on a common and directly interpretable scale.
+
+As a sensitivity analysis, we repeated the cumulative analysis using a generalized linear mixed-effects model with a Gamma distribution and a log link function. These results are reported in the Supplementary Materials and were consistent with those obtained from the Gaussian model.
+
+## Subsampling analysis
+
+The full datasets contain a relatively large numbers of trials and participants. To evaluate how the cumulative trajectories behave under sample sizes closer to typical laboratory experiments, we repeated the cumulative analysis after subsampling participants. To simulate the same experiment with a lower number of participants we sampled without replacement $n = 30$, $50$, and $100$ participants repeating the cumulative modelling approach. We repeated the sampling and cumulative models 5000 times. We preserved the temporal effect by sampling only at the participant level.
+
+## Preprocessing
+
+Before modelling, reaction-time data were preprocessed separately for each task. Participants with overall accuracy below 80% were removed. Trials with reaction times above 1500 ms were excluded, and participants with inconsistent trial counts were removed when necessary. The final cleaned datasets included `r length(unique(simon$id))` participants for the Simon task, `r length(unique(snarc$id))` participants for the SNARC task, and `r length(unique(tswitch$id))` participants for the task-switching task. Only correct-response trials were used in the cumulative models. The @tbl-summ-trials summarise the average number of trials for each task and condition across participants.
+
+```{r}
+#| label: tbl-summ-trials
+#| tbl-cap: Average number of total and analyzed trials for each task and condition. We calculated the number of total trials (Mean trials column) and the number of correct trials (Mean correct column) across participants for each task and condition. The last column reports the average percentage of incorrect (discarded) trials.
+
+tab_pd <- taskd |> 
+  drop_na(congruence) |> 
+  group_by(task, id, congruence) |> 
+  summarise(
+    nc = sum(correct),
+    n = n(),
+    pd = 1 - nc / n,
+    .groups = "drop"
+  ) |> 
+  group_by(task, congruence) |> 
+  summarise(
+    m_nc = mean(nc),
+    m_n = mean(n),
+    m_pd = mean(pd) * 100,
+    .groups = "drop"
+  ) |> 
+  mutate(
+    m_nc = round(m_nc, 2),
+    m_n = round(m_n, 2),
+    m_pd = round(m_pd, 2)
+  ) |> 
+  mutate(
+    congruence = condition_labels(task, congruence),
+    task = task_labels[task]
+  ) |> 
+  rename(
+    "Task" = task,
+    "Condition" = congruence,
+    "Mean correct" = m_nc,
+    "Mean trials" = m_n,
+    "Mean error (%)" = m_pd
+  )
+
+flextable(tab_pd) |>
+  merge_v(j = 1) |> 
+  bold(i = 1, part = "header") |> 
+  theme_apa() |> 
+  autofit()
+```
+
+
+# Results
+
+## Descriptive checks
+
+@fig-eda summarizes participant-level reaction times across tasks and congruency conditions. Average reaction times were more variable in the SNARC and task-switching tasks than in the Simon task. The Simon effect appears relatively consistent across participants, whereas the task-switching effect shows larger between-participant variability in both magnitude and direction.
+
+```{r}
+#| label: fig-eda
+#| fig-cap: Participant-level reaction times by congruency and task. Mean reaction times were computed separately for each participant, task, and congruency condition using correct trials only. Points represent participant-level means, and lines connect congruent and incongruent means from the same participant. Boxplots summarize the distribution of participant means within each congruency condition.
+
+subject_rt <- taskd |>
+  filter(correct == 1) |>
+  drop_na(congruence) |>
+  mutate(
+    congruence = condition_labels(task, congruence),
+    congruence = factor(
+      congruence,
+      levels = c("Congruent", "Incongruent", "Non-switch", "Switch")
+    ),
+    task = recode(task, !!!task_labels)
+  ) |>
+  group_by(task, id, congruence) |>
+  summarise(rt = mean(rt), .groups = "drop") |>
+  mutate(
+    x = if_else(congruence %in% c("Congruent", "Non-switch"), 1, 2),
+    x_box = if_else(congruence %in% c("Congruent", "Non-switch"), x - 0.25, x + 0.25)
+  )
+
+x_labs <- subject_rt |>
+  distinct(task, congruence, x) |>
+  mutate(y = -Inf)
+
+ggplot(subject_rt, aes(y = rt)) +
+  geom_boxplot(
+    aes(x = x_box, group = congruence, fill = congruence),
+    width = 0.22,
+    outlier.shape = NA,
+    alpha = 0.45,
+    linewidth = plot_lwd_ref,
+    show.legend = FALSE
+  ) +
+  geom_line(
+    aes(x = x, group = id),
+    alpha = 0.22,
+    linewidth = plot_lwd_ref
+  ) +
+  geom_paper_point(
+    aes(x = x),
+    position = position_jitter(width = 0.06, seed = 2023)
+  ) +
+  geom_text(
+    data = x_labs,
+    aes(x = x, y = y, label = congruence),
+    inherit.aes = FALSE,
+    vjust = 1.8,
+    size = 3.2
+  ) +
+  scale_x_continuous(
+    breaks = NULL,
+    limits = c(0.5, 2.5)
+  ) +
+  coord_cartesian(clip = "off") +
+  facet_wrap(~ task) +
+  labs(
+    x = NULL,
+    y = "Reaction time (ms)"
+  ) +
+  theme(
+    plot.margin = margin(6, 6, 22, 6)
+  )
+```
+
+## Cumulative model estimates
+
+@fig-cum-simon, @fig-cum-snarc, and @fig-cum-tswitch show the cumulative estimates for each task. For each task, the panels report the fixed intercept $\beta_0$, the fixed condition effect $\beta_1$, the estimated marginal means, the participant-level random-intercept standard deviation $\sigma_P$, the participant-by-condition random-slope standard deviation $\sigma_{P \times C}$, and the residual standard deviation $\sigma_E$.
+
+The relevant comparison is not only whether $\mathrm{SE}_{\beta_1}$ decreases with trial accumulation, but also whether $\beta_1$ and the variance components remain stable. A stable $\beta_1$ combined with decreasing uncertainty would support the standard precision-improvement interpretation. In contrast, systematic changes in $\beta_1$, $\sigma_{P \times C}$, or $\sigma_E$ would indicate that later trials are changing the estimated phenomenon or the measurement structure, rather than merely refining the estimate. 
+
+Finally we reported also the cumulative effect size introduced in @eq-d-m [@Westfall2014-im] and the cumulative test statistic. The effect size represent the difference between the two conditions standardized using the total variability. The effect size can be considered a proxy for the statistical power and is the trade-off between the numerator and the denominator thus the raw difference between the conditions and the different 
+source of variability. The @fig-es-t-cum depicts the cumulative effect size and test statistics.
+
+```{r}
+#| label: fig-es-t-cum
+#| fig-cap: Cumulative effect size as proposed by @Westfall2014-im and $t$ statistics. 
+
+es_cum <- tasks_cum |> 
+  unnest(es)
+
+t_cum <- tasks_cum |> 
+  unnest(params) |> 
+  filter(term == "congruencei")
+
+es_t_cum <- left_join(
+  select(es_cum, task, trial, d), 
+  select(t_cum, task, trial, statistic),
+  by = c("task", "trial")
+)
+
+es_t_cum |> 
+  mutate(task = task_labels[task]) |> 
+  pivot_longer(c(d, statistic)) |> 
+  mutate(
+    name = if_else(name == "d", "d", "t"),
+    name = factor(name, levels = c("d", "t"))
+  ) |> 
+  ggplot(aes(x = trial, y = abs(value))) +
+  geom_paper_line() +
+  facet_grid(name ~ task, scales = "free_y") +
+  labs(
+    y = NULL,
+    x = "Cumulative trial"
+  )
+```
+
+```{r}
+#| include: false
+
+term_titles <- list(
+  "(Intercept)" = TeX("$\\beta_0$"),
+  "congruence1" = TeX("$\\beta_1$"),
+  "congruencei" = TeX("$\\beta_1$"),
+  "sd__(Intercept)" = TeX("$\\sigma_P$"),
+  "sd__congruence1" = TeX("$\\sigma_{P \\times C}$"),
+  "sd__congruencei" = TeX("$\\sigma_{P \\times C}$"),
+  "sd__Observation" = TeX("$\\sigma_E$"),
+  "sigma" = TeX("$\\sigma_E$")
+)
+
+cum_plot <- function(data, x_limits = NULL, title = NULL) {
+  data <- data |>
+    mutate(
+      conf.low = if_else(is.na(conf.low), estimate, conf.low),
+      conf.high = if_else(is.na(conf.high), estimate, conf.high)
+    )
+
+  ggplot(data, aes(x = trial, y = estimate)) +
+    geom_paper_ribbon(aes(ymin = conf.low, ymax = conf.high)) +
+    geom_paper_line() +
+    scale_x_continuous(limits = x_limits) +
+    labs(title = title, x = "Cumulative trial", y = NULL)
+}
+
+emm_limits <- function(data) {
+  lower_name <- intersect(c("asymp.LCL", "lower.CL", "conf.low"), names(data))[1]
+  upper_name <- intersect(c("asymp.UCL", "upper.CL", "conf.high"), names(data))[1]
+  list(lower = lower_name, upper = upper_name)
+}
+
+plot_cumulative_task <- function(data, task_id, task_title) {
+  cum_dat <- data |>
+    filter(task == task_id) |>
+    unnest(params) |> 
+    filter(!str_detect(term, "^cor__"))
+
+  x_limits <- range(cum_dat$trial, na.rm = TRUE)
+
+  emm_dat <- data |>
+    filter(task == task_id) |>
+    unnest(emmeans) |> 
+    mutate(
+      congruence = condition_labels(task, congruence),
+      congruence = factor(
+        congruence,
+        levels = c("Congruent", "Incongruent", "Non-switch", "Switch")
+      )
+    ) |>
+    filter(contrast != "c - i")
+
+  ci_names <- emm_limits(emm_dat)
+
+  p_emm <- ggplot(
+    emm_dat,
+    aes(x = trial, y = emmean, color = congruence, fill = congruence)
+  ) +
+    geom_paper_ribbon(
+      aes(ymin = .data[[ci_names$lower]], ymax = .data[[ci_names$upper]]),
+      alpha = ribbon_alpha
+    ) +
+    geom_paper_line() +
+    scale_x_continuous(limits = x_limits) +
+    labs(title = NULL, x = "Cumulative trial", y = NULL) +
+    theme(
+      legend.position = "bottom",
+      legend.background = element_rect(fill = scales::alpha("white", 0.75), color = NA),
+      legend.key = element_rect(fill = scales::alpha("white", 0.75), color = NA)
+    )
+
+  make_term_plot <- function(term_candidates) {
+    term_present <- intersect(term_candidates, unique(cum_dat$term))[1]
+    if (is.na(term_present)) {
+      return(plot_spacer())
+    }
+
+    title <- term_titles[[term_present]]
+    if (is.null(title)) title <- term_present
+
+    cum_dat |>
+      filter(term == term_present) |>
+      cum_plot(x_limits = x_limits, title = title)
+  }
+
+  plot_list <- list(
+    make_term_plot(c("(Intercept)")),
+    make_term_plot(c("congruence1", "congruencei")),
+    p_emm,
+    make_term_plot(c("sd__(Intercept)")),
+    make_term_plot(c("sd__congruence1", "sd__congruencei")),
+    make_term_plot(c("sd__Observation", "sigma"))
+  )
+
+  wrap_plots(plot_list, ncol = 3) +
+    plot_layout(axes = "collect", axis_titles = "collect") +
+    plot_annotation(title = task_title)
+}
+```
+
+```{r}
+#| label: fig-cum-simon
+#| fig-cap: Cumulative mixed-model estimates for the Simon task. Each panel shows the trajectory of a model-derived quantity as trials are progressively accumulated. Lines represent point estimates from models fitted to cumulative trial subsets; shaded bands represent confidence intervals where available.
+
+plot_cumulative_task(tasks_cum, "simon", "Simon")
+```
+
+```{r}
+#| label: fig-cum-snarc
+#| fig-cap: Cumulative mixed-model estimates for the SNARC task. Each panel shows the trajectory of a model-derived quantity as trials are progressively accumulated. Lines represent point estimates from models fitted to cumulative trial subsets; shaded bands represent confidence intervals where available.
+
+plot_cumulative_task(tasks_cum, "snarc", "SNARC")
+```
+
+```{r}
+#| label: fig-cum-tswitch
+#| fig-cap: Cumulative mixed-model estimates for the task-switching task. Each panel shows the trajectory of a model-derived quantity as trials are progressively accumulated. Lines represent point estimates from models fitted to cumulative trial subsets; shaded bands represent confidence intervals where available.
+
+plot_cumulative_task(tasks_cum, "tswitch", "Task-switching")
+```
+
+The tasks shows three different patterns. The Simon effect is relatively stable across the entire experiment with an initial reduction of the standard error and then a stabilization around 100 trials.
+
+The Snarc effect shows a progressive reduction mainly related to increasing reaction times in congruent trials. Similarly to the Simon effect also the standard error reduction is stabilized around 100 trials. Between-participants variability in average reaction times shows a progressive decrease while the residual trial-level variability shows a progressive increase.
+
+Finally, also the task-switching effect shows a progressive reduction but with an higher rate compared to the Snarc effect mainly related to the increase in reaction times for the incongruent trials. All the variances components show a progressive decrease.
+
+The pattern presented in Figures [-@fig-cum-simon, -@fig-cum-snarc, -@fig-cum-tswitch] is combined into the effect size and test statistics presented in @fig-es-t-cum. The effect size shows the same pattern of the raw difference between conditions with a stable Simon effect and cumulative reduction for the Snarc and Task-switching. The test statistics shows a different pattern. For the Simon effect, increasing trials increase the test statistics because the numerator $\hat \beta_1$ is stable and there is a progressive reduction in standard error due to increasing trials and the stability of variance components. The test statistics continue to rise for both the SNARC and task-switching tasks, albeit at a slower rate, particularly after the first third of the experiment.
+
+## Participant subsampling
+
+@fig-bootstrap shows the cumulative trajectory of the fixed condition estimate and its standard error under different participant sample sizes. As expected, given the subsampling from the complete pool of subjects, the trends are the same regardless of the number of participants. The standard error stabilization on the other side is slower but following the same pattern. For an experiment with 15 or 50 subjects, in the first half of the trials there is a clear stabilization of the gain in precision.
+
+```{r}
+#| label: fig-bootstrap
+#| fig-cap: Participant-subsampling results for the cumulative condition effect. Lines represent average estimates across bootstrap samples. Shaded regions show the 2.5th and 97.5th percentiles.
+
+res_resampling |>
+  filter(term == "congruence1") |>
+  pivot_longer(c(estimate, std.error), names_to = "measure", values_to = "value") |>
+  group_by(task, N, trial, measure) |>
+  summarise(
+    avg = mean(value, na.rm = TRUE),
+    med = median(value, na.rm = TRUE),
+    lb = quantile(value, 0.025, na.rm = TRUE),
+    ub = quantile(value, 0.975, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    measure_lbl = case_when(
+      measure == "estimate" ~ "beta[1]",
+      measure == "std.error" ~ "SE[beta[1]]"
+    ),
+    N = factor(
+      sprintf("N = %s", N),
+      levels = c("N = 15", "N = 50", "N = 100")
+    )
+  ) |> 
+  filter(measure == "estimate") |> 
+  ggplot(aes(x = trial, y = avg)) +
+  geom_paper_ribbon(aes(ymin = lb, ymax = ub)) +
+  geom_paper_line() +
+  facet_grid(
+    task + measure_lbl ~ N,
+    #scales = "free_y",
+    labeller = labeller(
+      measure_lbl = label_parsed,
+      N = label_value
+    )
+  ) +
+  labs(
+    x = "Cumulative trial",
+    y = "Estimate (ms)"
+  )
+```
+
+# Discussion
+
+Discussion here
+
+# Conclusion
+
+Conclusion here
+
+# References
+
+::: {#refs}
+:::

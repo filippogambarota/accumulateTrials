@@ -1,0 +1,131 @@
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+\caption{\label{fig-b-pattern-example}Schematic illustration of possible
+trial-accumulation patterns. The solid line represents the cumulative
+estimated effect in milliseconds, and the shaded region represents
+illustrative uncertainty. Trial accumulation may reveal an effect that
+emerges and stabilizes, an effect that remains stable while precision
+increases, or an effect whose magnitude changes systematically as
+additional trials are included.}
+
+\centering{
+
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-b-pattern-example-1.pdf}
+
+}
+
+\end{figure*}
+\efloatseparator
+ 
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+\caption{\label{fig-eda}Participant-level reaction times by congruency
+and task. Mean reaction times were computed separately for each
+participant, task, and congruency condition using correct trials only.
+Points represent participant-level means, and lines connect congruent
+and incongruent means from the same participant. Boxplots summarize the
+distribution of participant means within each congruency condition.}
+
+\centering{
+
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-eda-1.pdf}
+
+}
+
+\end{figure*}
+\efloatseparator
+ 
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+\caption{\label{fig-es-t-cum}Cumulative effect size as proposed by
+Westfall et al. (\citeproc{ref-Westfall2014-im}{2014}) and \(t\)
+statistics.}
+
+\centering{
+
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-es-t-cum-1.pdf}
+
+}
+
+\end{figure*}
+\efloatseparator
+ 
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+\caption{\label{fig-cum-simon}Cumulative mixed-model estimates for the
+Simon task. Each panel shows the trajectory of a model-derived quantity
+as trials are progressively accumulated. Lines represent point estimates
+from models fitted to cumulative trial subsets; shaded bands represent
+confidence intervals where available.}
+
+\centering{
+
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-cum-simon-1.pdf}
+
+}
+
+\end{figure*}
+\efloatseparator
+ 
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+\caption{\label{fig-cum-snarc}Cumulative mixed-model estimates for the
+SNARC task. Each panel shows the trajectory of a model-derived quantity
+as trials are progressively accumulated. Lines represent point estimates
+from models fitted to cumulative trial subsets; shaded bands represent
+confidence intervals where available.}
+
+\centering{
+
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-cum-snarc-1.pdf}
+
+}
+
+\end{figure*}
+\efloatseparator
+ 
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+\caption{\label{fig-cum-tswitch}Cumulative mixed-model estimates for the
+task-switching task. Each panel shows the trajectory of a model-derived
+quantity as trials are progressively accumulated. Lines represent point
+estimates from models fitted to cumulative trial subsets; shaded bands
+represent confidence intervals where available.}
+
+\centering{
+
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-cum-tswitch-1.pdf}
+
+}
+
+\end{figure*}
+\efloatseparator
+ 
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+\caption{\label{fig-bootstrap}Participant-subsampling results for the
+cumulative condition effect. Lines represent average estimates across
+bootstrap samples. Shaded regions show the 2.5th and 97.5th
+percentiles.}
+
+\centering{
+
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-bootstrap-1.pdf}
+
+}
+
+\end{figure*}

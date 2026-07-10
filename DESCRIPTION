@@ -1,0 +1,82 @@
+Package: accumulateTrials
+Title: Trial Accumulation in Classical Experimental Psychology Paradigms
+Version: 0.0.1
+Authors@R: c(
+    person(
+        given = "Giovanni",
+        family = "Bruno",
+        email = "giovanni.bruno.2@unipd.it",
+        role = c("aut", "cre"),
+        comment = c(ORCID = "0000-0002-2526-880X")
+    ),
+    person(
+        given = "Filippo",
+        family = "Gambarota",
+        email = "filippo.gambarota@unipd.it",
+        role = "aut",
+        comment = c(ORCID = "0000-0002-6666-1747")
+    ),
+    person(
+        given = "Roberta",
+        family = "Sellaro",
+        email = "roberta.sellaro@unipd.it",
+        role = "aut",
+        comment = c(ORCID = "0000-0003-2316-9936")
+    ),
+    person(
+        given = "Arianna",
+        family = "Schiano Lomoriello",
+        email = "arianna.schiano@unipd.it",
+        role = "aut",
+        comment = c(ORCID = "0000-0003-4521-0450")
+    ),
+    person(
+        given = "Simone",
+        family = "Cutini",
+        email = "simone.cutini@unipd.it",
+        role = "aut",
+        comment = c(ORCID = "0000-0001-6332-3219")
+    )
+  )
+Description: Provides data-processing, modelling, resampling, and visualization
+    tools used to study how the progressive accumulation of trials affects
+    effect estimates, uncertainty, variance components, standardized effect
+    sizes, and test statistics in repeated-measures experiments. The project
+    focuses on three classical experimental psychology paradigms: the Simon
+    task, the Spatial Numerical Association of Response Codes (SNARC) task,
+    and task switching. Gaussian and generalized mixed-effects models are used
+    to distinguish gains in precision from systematic changes in the effect or
+    its variance components across the course of an experiment.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Language: en-US
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.3.0)
+Imports:
+    dplyr,
+    insight,
+    lme4,
+    tibble,
+    utils
+Suggests:
+    broom.mixed,
+    devtools,
+    emmeans,
+    flextable,
+    furrr,
+    future,
+    ggplot2,
+    grid,
+    here,
+    knitr,
+    latex2exp,
+    patchwork,
+    purrr,
+    scales,
+    stringr,
+    tidyr
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+Config/roxygen2/version: 8.0.0
+LazyData: true
