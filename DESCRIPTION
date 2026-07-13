@@ -57,6 +57,7 @@ Imports:
     dplyr,
     insight,
     lme4,
+    svglite,
     tibble,
     utils
 Suggests:
@@ -75,7 +76,8 @@ Suggests:
     purrr,
     scales,
     stringr,
-    tidyr
+    tidyr,
+    performance
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Config/roxygen2/version: 8.0.0

@@ -1,0 +1,65 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "AccumulateTrials",
+    "section": "",
+    "text": "The paper can be found here paper and the supplementary here"
+  },
+  {
+    "objectID": "paper/paper.html#trial-accumulation-and-non-stationarity",
+    "href": "paper/paper.html#trial-accumulation-and-non-stationarity",
+    "title": "‘The More the Trials, the Stronger the Effect’. Fact or Myth? Evidence from Classical Experimental Psychology Paradigms",
+    "section": "Trial accumulation and non-stationarity",
+    "text": "Trial accumulation and non-stationarity\nThe equations above make clear that effect size, standard error, and test statistics are jointly determined by the raw difference between the two conditions and by the variability of each model component. The mixed-effects model in Equation 1 treats fixed effects and variance components as stationary across the experiment. Unless time or trial order is modeled explicitly, all components are assumed to be stable across trials. In practice, fatigue, habituation, learning, adaptation, or strategy shifts may affect either the estimated condition effect or the variance components. We therefore indexed each element by m, denoting the cumulative number of trials included in the analysis for each participant. For example, \\beta_1(m) with m = 30 is the raw difference between conditions estimated from the first 30 total trials for each participant. The Equation 4 depicts the cumulative test statistics and the standard error. The equation assume that for the m trials the two conditions are balanced.\n\n\\begin{gathered}\nt(m)\n=\n\\frac{\\hat{\\beta}_1(m)}\n{\\mathrm{SE}_{\\hat{\\beta}_1}(m)},\n\\\\[1em]\n\\mathrm{SE}_{\\hat{\\beta}_1}(m)\n=\n\\sqrt{\n\\frac{\\sigma^2_{P \\times C}(m)}{n}\n+\n\\frac{4\\sigma_E^2(m)}{nm}\n}\n\\end{gathered}\n\\tag{4}\nSimilarly we can define also the cumulative effect size in the Equation 5. The key point is that if the true effect or any variance component is not stationary, then trial accumulation should be evaluated as a temporal process rather than as a simple increase in k. Figure 1 illustrates three possible cumulative trajectories: an effect that emerges and stabilizes, an effect that remains stable while uncertainty decreases, and an effect that changes systematically as additional trials are included.\n\nd(m)\n=\n\\frac{\\hat \\beta_1(m)}\n{\n\\sqrt{\n\\sigma_P^2(m)\n+\n0.25\\sigma^2_{P\\times C}(m)\n+\n\\sigma_E^2(m)\n}\n}.\n\\tag{5}"
+  },
+  {
+    "objectID": "paper/paper.html#cumulative-modelling-strategy",
+    "href": "paper/paper.html#cumulative-modelling-strategy",
+    "title": "‘The More the Trials, the Stronger the Effect’. Fact or Myth? Evidence from Classical Experimental Psychology Paradigms",
+    "section": "Cumulative modelling strategy",
+    "text": "Cumulative modelling strategy\nTo examine the progressive impact of adding trials, we used a cumulative modelling approach. We re-fitted thesame mixed-effects model (see Equation 1) progressively adding consecutive trials. This strategy avoid including trial as a fixed effect with the risk of assuming a certain parametric shape (e.g., linear or quadratic) or using complex splines. In addition, we are able to have the cumulative effect of any fixed or random model component.\nWe started by setting m = 32 as the first block of trials because congruent and incongruent trials were sufficiently balanced. Then we added m = 5 trials progressively until the final step with the complete experiment.\nWe conducted the analysis using Models were fitted using the lme4 (Bates et al., 2015) package through the lmer function. For each cumulative trial subset, we fitted a Gaussian linear mixed-effects model including congruency as a fixed effect, random intercepts for participants, and by-participant random slopes for congruency. Congruency was coded using centered contrast coding (-0.5, 0.5), so that the fixed-effect estimate \\beta_1 directly represents the mean difference between incongruent and congruent trials.\nThis model specification allowed us to estimate, for each cumulative trial subset m, the fixed effect \\hat{\\beta}_1(m) together with the variance components entering the standardized effect-size calculation. Because our aim was to evaluate the cumulative evolution of these quantities while preserving their interpretation on the original reaction-time scale, we used raw reaction times in a Gaussian mixed-effects framework rather than applying a log-transformation or using a generalized linear mixed-effects model as the main analysis. A log-transformation would place fixed effects and variance components on the log-RT scale, making the variance decomposition less directly interpretable in milliseconds. Similarly, in generalized linear mixed-effects models, the residual variance is not estimated as a free variance component on the response scale, and variance decomposition depends on the assumed mean–variance relationship and link function. Therefore, a Gaussian model on raw reaction times was used to keep the fixed effect and all variance components on a common and directly interpretable scale.\nAs a sensitivity analysis, we repeated the cumulative analysis using a generalized linear mixed-effects model with a Gamma distribution and a log link function. These results are reported in the Supplementary Materials and were consistent with those obtained from the Gaussian model."
+  },
+  {
+    "objectID": "paper/paper.html#subsampling-analysis",
+    "href": "paper/paper.html#subsampling-analysis",
+    "title": "‘The More the Trials, the Stronger the Effect’. Fact or Myth? Evidence from Classical Experimental Psychology Paradigms",
+    "section": "Subsampling analysis",
+    "text": "Subsampling analysis\nThe full datasets contain a relatively large numbers of trials and participants. To evaluate how the cumulative trajectories behave under sample sizes closer to typical laboratory experiments, we repeated the cumulative analysis after subsampling participants. To simulate the same experiment with a lower number of participants we sampled without replacement n = 30, 50, and 100 participants repeating the cumulative modelling approach. We repeated the sampling and cumulative models 5000 times. We preserved the temporal effect by sampling only at the participant level."
+  },
+  {
+    "objectID": "paper/paper.html#preprocessing",
+    "href": "paper/paper.html#preprocessing",
+    "title": "‘The More the Trials, the Stronger the Effect’. Fact or Myth? Evidence from Classical Experimental Psychology Paradigms",
+    "section": "Preprocessing",
+    "text": "Preprocessing\nBefore modelling, reaction-time data were preprocessed separately for each task. Participants with overall accuracy below 80% were removed. Trials with reaction times above 1500 ms were excluded, and participants with inconsistent trial counts were removed when necessary. The final cleaned datasets included 207 participants for the Simon task, 214 participants for the SNARC task, and 206 participants for the task-switching task. Only correct-response trials were used in the cumulative models. The Table 1 summarise the average number of trials for each task and condition across participants."
+  },
+  {
+    "objectID": "paper/paper.html#descriptive-checks",
+    "href": "paper/paper.html#descriptive-checks",
+    "title": "‘The More the Trials, the Stronger the Effect’. Fact or Myth? Evidence from Classical Experimental Psychology Paradigms",
+    "section": "Descriptive checks",
+    "text": "Descriptive checks\nFigure 2 summarizes participant-level reaction times across tasks and congruency conditions. Average reaction times were more variable in the SNARC and task-switching tasks than in the Simon task. The Simon effect appears relatively consistent across participants, whereas the task-switching effect shows larger between-participant variability in both magnitude and direction."
+  },
+  {
+    "objectID": "paper/paper.html#cumulative-model-estimates",
+    "href": "paper/paper.html#cumulative-model-estimates",
+    "title": "‘The More the Trials, the Stronger the Effect’. Fact or Myth? Evidence from Classical Experimental Psychology Paradigms",
+    "section": "Cumulative model estimates",
+    "text": "Cumulative model estimates\nFigure 4, Figure 5, and Figure 6 show the cumulative estimates for each task. For each task, the panels report the fixed intercept \\beta_0, the fixed condition effect \\beta_1, the estimated marginal means, the participant-level random-intercept standard deviation \\sigma_P, the participant-by-condition random-slope standard deviation \\sigma_{P \\times C}, and the residual standard deviation \\sigma_E.\nThe relevant comparison is not only whether \\mathrm{SE}_{\\beta_1} decreases with trial accumulation, but also whether \\beta_1 and the variance components remain stable. A stable \\beta_1 combined with decreasing uncertainty would support the standard precision-improvement interpretation. In contrast, systematic changes in \\beta_1, \\sigma_{P \\times C}, or \\sigma_E would indicate that later trials are changing the estimated phenomenon or the measurement structure, rather than merely refining the estimate.\nFinally we reported also the cumulative effect size introduced in Equation 5 and the cumulative test statistic. The effect size represent the difference between the two conditions standardized using the total variability. The effect size can be considered a proxy for the statistical power and is the trade-off between the numerator and the denominator thus the raw difference between the conditions and the different source of variability. The Figure 3 depicts the cumulative effect size and test statistics.\nThe tasks shows three different patterns. The Simon effect is relatively stable across the entire experiment with an initial reduction of the standard error and then a stabilization around 100 trials.\nThe Snarc effect shows a progressive reduction mainly related to increasing reaction times in congruent trials. Similarly to the Simon effect also the standard error reduction is stabilized around 100 trials. Between-participants variability in average reaction times shows a progressive decrease while the residual trial-level variability shows a progressive increase.\nFinally, also the task-switching effect shows a progressive reduction but with an higher rate compared to the Snarc effect mainly related to the increase in reaction times for the incongruent trials. All the variances components show a progressive decrease.\nThe pattern presented in Figures Figure 4 is combined into the effect size and test statistics presented in Figure 3. The effect size shows the same pattern of the raw difference between conditions with a stable Simon effect and cumulative reduction for the Snarc and Task-switching. The test statistics shows a different pattern. For the Simon effect, increasing trials increase the test statistics because the numerator \\hat \\beta_1 is stable and there is a progressive reduction in standard error due to increasing trials and the stability of variance components. The test statistics continue to rise for both the SNARC and task-switching tasks, albeit at a slower rate, particularly after the first third of the experiment."
+  },
+  {
+    "objectID": "paper/paper.html#participant-subsampling",
+    "href": "paper/paper.html#participant-subsampling",
+    "title": "‘The More the Trials, the Stronger the Effect’. Fact or Myth? Evidence from Classical Experimental Psychology Paradigms",
+    "section": "Participant subsampling",
+    "text": "Participant subsampling\nFigure 7 shows the cumulative trajectory of the fixed condition estimate and its standard error under different participant sample sizes. As expected, given the subsampling from the complete pool of subjects, the trends are the same regardless of the number of participants. The standard error stabilization on the other side is slower but following the same pattern. For an experiment with 15 or 50 subjects, in the first half of the trials there is a clear stabilization of the gain in precision."
+  },
+  {
+    "objectID": "paper/supplementary.html",
+    "href": "paper/supplementary.html",
+    "title": "‘The More the Trials, the Stronger the Effect’. Fact or Myth? Evidence from Classical Experimental Psychology Paradigms",
+    "section": "",
+    "text": "Log models"
+  }
+]

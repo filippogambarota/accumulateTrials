@@ -1,0 +1,10 @@
+---
+title: "'The More the Trials, the Stronger the Effect'.  Fact or Myth?  Evidence from Classical Experimental Psychology Paradigms"
+subtitle: Supplementary Materials
+toc: true
+format:
+    pdf: default
+    html: default
+---
+
+# Log models

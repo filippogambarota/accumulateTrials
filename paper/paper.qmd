@@ -44,6 +44,7 @@ author-note:
     conflict of interest: The author has no conflict of interest to declare.
 bibliography: references.bib
 format:
+    apaquarto-html: default
     apaquarto-pdf:
       floatsintext: false
 ---
@@ -190,8 +191,12 @@ knitr::opts_chunk$set(
 #| cache: true
 
 tasks_cum <- readRDS(here::here("objects", "task_cum.rds"))
-res_resampling <- readRDS(here::here("objects", "task_resampling_lt.rds"))
+res_resampling <- readRDS(here::here("objects","task_resampling_lt.rds"))
 ```
+
+::: {.callout-warning}
+The paper is a work in progress!
+:::
 
 # Introduction
 

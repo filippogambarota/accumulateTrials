@@ -1,5 +1,56 @@
 project:
-  title: "accumulateTrials"
+  type: website
+  output-dir: docs
 
+website:
+  title: "AccumulateTrials"
+  navbar:
+    left:
+      - href: index.qmd
+        text: home
 
+execute:
+  freeze: auto
 
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+
+author:
+  - name: Giovanni Bruno
+    corresponding: true
+    orcid: 0000-0002-2526-880X
+    email: giovanni.bruno.2@unipd.it
+    affiliations:
+      - name: University of Padova
+        department: Department of General Psychology
+        address: Via Venezia 8
+        city: Padova
+        region: PD
+        postal-code: 35131
+  - name: Filippo Gambarota
+    orcid: 0000-0002-6666-1747
+    email: filippo.gambarota@unipd.it
+    affiliations:
+      - name: University of Padova
+        department: Department of Developmental and Social Psychology
+  - name: Roberta Sellaro
+    orcid: 0000-0003-2316-9936
+    email: roberta.sellaro@unipd.it
+    affiliations:
+      - name: University of Padova
+        department: Department of Developmental and Social Psychology
+  - name: Arianna Schiano Lomoriello
+    orcid: 0000-0003-4521-0450
+    email: arianna.schiano@unipd.it
+    affiliations:
+      - name: University of Padova
+        department: Department of Developmental and Social Psychology
+  - name: Simone Cutini
+    orcid: 0000-0001-6332-3219
+    email: simone.cutini@unipd.it
+    affiliations:
+      - name: University of Padova
+        department: Department of Developmental and Social Psychology

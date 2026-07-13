@@ -5,7 +5,6 @@ library(tidyr)
 library(lme4)
 library(emmeans)
 library(broom.mixed)
-ù
 devtools::load_all()
 
 # Data cleaning ------------------------------------------------------------
@@ -80,9 +79,9 @@ step <- 5
 
 # Import clean data --------------------------------------------------------
 
-simon <- readRDS("data/clean/simon-clean.rds")
-snarc <- readRDS("data/clean/snarc-clean.rds")
-tswitch <- readRDS("data/clean/task-switching-clean.rds")
+data("simon")
+data("snarc")
+data("tswitch")
 
 # Combine tasks ------------------------------------------------------------
 
@@ -128,15 +127,19 @@ tasks_clean <- tasks_clean |>
 # Fit cumulative models ----------------------------------------------------
 
 # Fit one mixed-effects model for each task and cumulative-trial block.
+
 tasks_clean$fit <- lapply(tasks_clean$data, fit_model)
+tasks_clean$fit_log <- lapply(tasks_clean$data, fit_model_log)
 
 # Extract model summaries --------------------------------------------------
 
 # Fixed and random-effect parameters
 tasks_clean$params <- lapply(tasks_clean$fit, get_model_params)
+tasks_clean$params_log <- lapply(tasks_clean$fit_log, get_model_params)
 
 # Estimated marginal means and pairwise contrasts
 tasks_clean$emmeans <- lapply(tasks_clean$fit, get_model_emmeans)
+tasks_clean$emmeans_log <- lapply(tasks_clean$fit_log, get_model_emmeans)
 
 # Westfall-style standardized effect size
 tasks_clean$es <- lapply(tasks_clean$fit, westfall_d)
@@ -151,4 +154,8 @@ tasks_clean <- tasks_clean |>
 
 # Save output ---------------------------------------------------------------
 
-saveRDS(tasks_clean, "objects/task_cum.rds")
+tasks_clean_main <- select(tasks_clean, -ends_with("log"))
+tasks_clean_log <- select(tasks_clean, -c(emmeans, es, params, fit))
+
+saveRDS(tasks_clean_main, "objects/task_cum.rds")
+saveRDS(tasks_clean_log, "objects/task_cum_log.rds")
