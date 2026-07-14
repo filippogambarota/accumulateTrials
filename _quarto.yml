@@ -8,6 +8,10 @@ website:
     left:
       - href: index.qmd
         text: home
+      - href: paper/paper.qmd
+        text: paper
+      - href: paper/supplementary.qmd
+        text: supplementary
 
 execute:
   freeze: auto

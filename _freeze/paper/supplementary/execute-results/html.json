@@ -1,0 +1,15 @@
+{
+  "hash": "6ac466ebbfe75e69c8f360fc686fd003",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"'The More the Trials, the Stronger the Effect'.  Fact or Myth?  Evidence from Classical Experimental Psychology Paradigms\"\nsubtitle: Supplementary Materials\ntoc: true\nformat:\n    pdf: default\n    html: default\n---\n\n\n\n\n::: {.cell layout-align=\"center\"}\n\n:::\n\n\n\\newpage\n\n# Log-normal model\n\nIn this section we include the results of the same cumulative models presented in the main paper but using a log tranformations of the reaction times. We decided to present the raw reaction times to improve the intepretability of the model parameters, in particular the variance decomposition.\n\n\n::: {.cell layout-align=\"center\"}\n\n:::\n\n\n\n::: {.cell layout-align=\"center\"}\n::: {.cell-output-display}\n![](supplementary_files/figure-html/unnamed-chunk-2-1.png){fig-align='center' width=100%}\n:::\n:::\n\n\n\n::: {.cell layout-align=\"center\"}\n::: {.cell-output-display}\n![](supplementary_files/figure-html/unnamed-chunk-3-1.png){fig-align='center' width=100%}\n:::\n:::\n\n\n\n::: {.cell layout-align=\"center\"}\n::: {.cell-output-display}\n![](supplementary_files/figure-html/unnamed-chunk-4-1.png){fig-align='center' width=100%}\n:::\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

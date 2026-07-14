@@ -7,4 +7,245 @@ format:
     html: default
 ---
 
-# Log models
+```{r}
+#| label: setup
+#| include: false
+
+library(here)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(lme4)
+library(latex2exp)
+library(stringr)
+library(patchwork)
+
+knitr::opts_chunk$set(
+  echo = FALSE,
+  fig.align = "center",
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 7.2,
+  fig.height = 4.8,
+  dpi = 300,
+  out.width = "100%"
+)
+
+plot_base_size <- 11
+
+plot_lwd <- 0.65
+plot_lwd_strong <- 0.80
+plot_lwd_ref <- 0.45
+
+point_size <- 1.25
+point_alpha <- 0.35
+line_alpha <- 0.85
+ribbon_alpha <- 0.22
+
+common_theme <- function(base_size = plot_base_size) {
+  theme_minimal(base_size = base_size) +
+    theme(
+      text = element_text(size = base_size),
+
+      axis.title = element_text(face = "bold", size = base_size + 1),
+      axis.text = element_text(size = base_size - 1),
+
+      strip.text = element_text(face = "bold", size = base_size),
+      strip.background = element_rect(fill = "grey92", color = NA),
+
+      plot.title = element_text(
+        face = "bold",
+        size = base_size + 2,
+        hjust = 0.5,
+        margin = margin(b = 8)
+      ),
+      plot.subtitle = element_text(
+        size = base_size,
+        hjust = 0.5,
+        margin = margin(b = 8)
+      ),
+      plot.caption = element_text(size = base_size - 2, hjust = 0),
+
+      legend.title = element_blank(),
+      legend.text = element_text(size = base_size - 1),
+      legend.position = "bottom",
+
+      panel.grid.minor = element_blank(),
+      panel.grid.major = element_line(linewidth = 0.25),
+      panel.spacing = grid::unit(1.1, "lines"),
+
+      plot.margin = margin(6, 6, 6, 6)
+    )
+}
+
+theme_set(common_theme())
+
+update_geom_defaults("line", list(linewidth = plot_lwd, alpha = line_alpha))
+update_geom_defaults("smooth", list(linewidth = plot_lwd_strong))
+update_geom_defaults("point", list(size = point_size, alpha = point_alpha))
+update_geom_defaults("ribbon", list(alpha = ribbon_alpha, colour = NA))
+update_geom_defaults("boxplot", list(linewidth = plot_lwd_ref, outlier.size = 1.1))
+
+geom_paper_line <- function(..., linewidth = plot_lwd_strong, alpha = line_alpha) {
+  geom_line(..., linewidth = linewidth, alpha = alpha)
+}
+
+geom_paper_ribbon <- function(..., alpha = ribbon_alpha) {
+  geom_ribbon(..., alpha = alpha, colour = NA)
+}
+
+geom_paper_hline <- function(yintercept = 0, ...) {
+  geom_hline(
+    yintercept = yintercept,
+    linewidth = plot_lwd_ref,
+    linetype = "dashed",
+    ...
+  )
+}
+
+geom_paper_point <- function(..., size = point_size, alpha = point_alpha) {
+  geom_point(..., size = size, alpha = alpha)
+}
+
+task_labels <- c(
+  simon = "Simon",
+  snarc = "SNARC",
+  tswitch = "Task-switching"
+)
+
+condition_labels <- function(task, congruence) {
+  case_when(
+    task == "tswitch" & congruence == "i" ~ "Switch",
+    task == "tswitch" & congruence == "c" ~ "Non-switch",
+    congruence == "i" ~ "Incongruent",
+    congruence == "c" ~ "Congruent"
+  )
+}
+```
+
+```{r}
+#| label: data
+#| cache: true
+
+res <- readRDS(here("objects", "task_cum_log.rds"))
+res_plot <- select(res, task, trial, params_log, emmeans_log)
+res_plot <- rename(res_plot, "params" = params_log, "emmeans" = emmeans_log)
+```
+
+\newpage
+
+# Log-normal model
+
+In this section we include the results of the same cumulative models presented in the main paper but using a log tranformations of the reaction times. We decided to present the raw reaction times to improve the intepretability of the model parameters, in particular the variance decomposition.
+
+```{r}
+term_titles <- list(
+  "(Intercept)" = TeX("$\\beta_0$"),
+  "congruence1" = TeX("$\\beta_1$"),
+  "congruencei" = TeX("$\\beta_1$"),
+  "sd__(Intercept)" = TeX("$\\sigma_P$"),
+  "sd__congruence1" = TeX("$\\sigma_{P \\times C}$"),
+  "sd__congruencei" = TeX("$\\sigma_{P \\times C}$"),
+  "sd__Observation" = TeX("$\\sigma_E$"),
+  "sigma" = TeX("$\\sigma_E$")
+)
+
+cum_plot <- function(data, x_limits = NULL, title = NULL) {
+  data <- data |>
+    mutate(
+      conf.low = if_else(is.na(conf.low), estimate, conf.low),
+      conf.high = if_else(is.na(conf.high), estimate, conf.high)
+    )
+
+  ggplot(data, aes(x = trial, y = estimate)) +
+    geom_paper_ribbon(aes(ymin = conf.low, ymax = conf.high)) +
+    geom_paper_line() +
+    scale_x_continuous(limits = x_limits) +
+    labs(title = title, x = "Cumulative trial", y = NULL)
+}
+
+emm_limits <- function(data) {
+  lower_name <- intersect(c("asymp.LCL", "lower.CL", "conf.low"), names(data))[1]
+  upper_name <- intersect(c("asymp.UCL", "upper.CL", "conf.high"), names(data))[1]
+  list(lower = lower_name, upper = upper_name)
+}
+
+plot_cumulative_task <- function(data, task_id, task_title) {
+  cum_dat <- data |>
+    filter(task == task_id) |>
+    unnest(params) |> 
+    filter(!str_detect(term, "^cor__"))
+
+  x_limits <- range(cum_dat$trial, na.rm = TRUE)
+
+  emm_dat <- data |>
+    filter(task == task_id) |>
+    unnest(emmeans) |> 
+    mutate(
+      congruence = condition_labels(task, congruence),
+      congruence = factor(
+        congruence,
+        levels = c("Congruent", "Incongruent", "Non-switch", "Switch")
+      )
+    ) |>
+    filter(contrast != "c - i")
+
+  ci_names <- emm_limits(emm_dat)
+
+  p_emm <- ggplot(
+    emm_dat,
+    aes(x = trial, y = emmean, color = congruence, fill = congruence)
+  ) +
+    geom_paper_ribbon(
+      aes(ymin = .data[[ci_names$lower]], ymax = .data[[ci_names$upper]]),
+      alpha = ribbon_alpha
+    ) +
+    geom_paper_line() +
+    scale_x_continuous(limits = x_limits) +
+    labs(title = NULL, x = "Cumulative trial", y = NULL) +
+    theme(
+      legend.position = "bottom",
+      legend.background = element_rect(fill = scales::alpha("white", 0.75), color = NA),
+      legend.key = element_rect(fill = scales::alpha("white", 0.75), color = NA)
+    )
+
+  make_term_plot <- function(term_candidates) {
+    term_present <- intersect(term_candidates, unique(cum_dat$term))[1]
+    if (is.na(term_present)) {
+      return(plot_spacer())
+    }
+
+    title <- term_titles[[term_present]]
+    if (is.null(title)) title <- term_present
+
+    cum_dat |>
+      filter(term == term_present) |>
+      cum_plot(x_limits = x_limits, title = title)
+  }
+
+  plot_list <- list(
+    make_term_plot(c("(Intercept)")),
+    make_term_plot(c("congruence1", "congruencei")),
+    p_emm,
+    make_term_plot(c("sd__(Intercept)")),
+    make_term_plot(c("sd__congruence1", "sd__congruencei")),
+    make_term_plot(c("sd__Observation", "sigma"))
+  )
+
+  wrap_plots(plot_list, ncol = 3) +
+    plot_layout(axes = "collect", axis_titles = "collect") +
+    plot_annotation(title = task_title)
+}
+```
+
+```{r}
+plot_cumulative_task(res_plot, "simon", "Simon")
+```
+
+```{r}
+plot_cumulative_task(res_plot, "snarc", "SNARC")
+```
+
+```{r}
+plot_cumulative_task(res_plot, "tswitch", "Task-switching")
+```

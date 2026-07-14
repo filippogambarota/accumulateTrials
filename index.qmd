@@ -3,4 +3,4 @@ title: "AccumulateTrials"
 format: html
 ---
 
-The paper can be found here [paper](paper/paper.qmd) and the supplementary [here](paper/supplementary.qmd)
+{{< include README.md >}}

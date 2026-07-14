@@ -101,6 +101,14 @@ ul.task-list li input[type="checkbox"] {
     <a class="nav-link active" href="./index.html" aria-current="page"> 
 <span class="menu-text">home</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./paper/paper.html"> 
+<span class="menu-text">paper</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./paper/supplementary.html"> 
+<span class="menu-text">supplementary</span></a>
+  </li>  
 </ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
@@ -112,8 +120,16 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#scripts" id="toc-scripts" class="nav-link active" data-scroll-target="#scripts">Scripts</a></li>
+  <li><a href="#using-the-project" id="toc-using-the-project" class="nav-link" data-scroll-target="#using-the-project">Using the project</a></li>
+  <li><a href="#paper" id="toc-paper" class="nav-link" data-scroll-target="#paper">Paper</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -182,9 +198,36 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>The paper can be found here <a href="./paper/paper.html">paper</a> and the supplementary <a href="./paper/supplementary.html">here</a></p>
+<p>The repository contains the R code to reproduce the analyses of the paper. In addition the <code>paper/</code> folder contains the Quarto <code>qmd</code> files to reproduce the entire paper and supplementary materials.</p>
+<p>The repository is organized as an R package where:</p>
+<ul>
+<li><code>R/</code>: contains the custom functions that are used in the project. You can load the functions using <code>devtools::load_all()</code> that is equivalent to calling <code>library()</code>.</li>
+<li><code>data/</code>: contains the raw and processed datasets. You can load the cleaned data directly using <code>data("simon")</code>, <code>data("snarc")</code> and <code>data("tswitch")</code> or equivalently loading directly the files within <code>data/</code>.</li>
+</ul>
+<p>Functions within the <code>R</code> folder and datasets are documented. You can access the documentation using <code>?simon</code> for the dataset or <code>?accumulate_trials</code> for a custom function.</p>
+<p>Notice that the <code>data/raw/</code> folder contains the raw data but the original dataset from Psychopy has been cleaned removing the participant private ID that can be considered as a sensitive information. Any other processing step is contained in the <code>scripts/01-pre-processing.R</code> script.</p>
+<section id="scripts" class="level2">
+<h2 class="anchored" data-anchor-id="scripts">Scripts</h2>
+<p>The <code>scripts</code> folder contains the main scripts used to clean and analyze the data. In particular:</p>
+<ul>
+<li><code>01-pre-processing.R</code>: contains the pre-processing steps and creates the cleaned datasets.</li>
+<li><code>02-cumulative-model.R</code>: import the cleaned data and fit the comulative models extracting all the relevant parameters</li>
+<li><code>03a-resampling.R</code>: perform the subsampling analysis of the main models. Notice that the script is meant to be run in parallel using a cluster with 70 cores. In interactive mode the script runs serially but computations time could be really proebitive. In parallel with 70 cores the resampling took roughly 13 hours.</li>
+<li><code>03b-res-resampling.R</code>: is a simple pre-processing script that remove large columns from the main output for faster importing</li>
+</ul>
+</section>
+<section id="using-the-project" class="level2">
+<h2 class="anchored" data-anchor-id="using-the-project">Using the project</h2>
+<p>The best way to use the project and reproduce the analyses is cloning or downloading the repository then opening the <code>Rproj</code> file with R Studio or opening the main folder with any other IDE.</p>
+<p>Relevant R packages are managed using <code>renv</code> and the <code>.Rprofile</code> file will try to activate the <code>renv</code> envinronment and you will be prompted to install the correct version of the packages.</p>
+<p>Then you can simply run <code>devtools::load_all()</code> to load functions and data and run the scripts. The suggestion is to run the script using <code>Rscript</code> from the terminal to evaluate each step into an isolated environment.</p>
+</section>
+<section id="paper" class="level2">
+<h2 class="anchored" data-anchor-id="paper">Paper</h2>
+<p>The <code>paper/</code> folder contains the <code>paper.qmd</code> and <code>supplementary.qmd</code> Quarto files to render the paper and the supplementary materials. The full project can be rendered using <code>quarto render</code> from the root folder. The paper is created using the <a href="https://github.com/wjschne/apaquarto"><code>apaquarto</code></a> extension.</p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

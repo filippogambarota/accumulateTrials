@@ -1,10 +1,38 @@
 [
   {
+    "objectID": "paper/supplementary.html",
+    "href": "paper/supplementary.html",
+    "title": "‘The More the Trials, the Stronger the Effect’. Fact or Myth? Evidence from Classical Experimental Psychology Paradigms",
+    "section": "",
+    "text": "Log-normal model\nIn this section we include the results of the same cumulative models presented in the main paper but using a log tranformations of the reaction times. We decided to present the raw reaction times to improve the intepretability of the model parameters, in particular the variance decomposition."
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "AccumulateTrials",
     "section": "",
-    "text": "The paper can be found here paper and the supplementary here"
+    "text": "The repository contains the R code to reproduce the analyses of the paper. In addition the paper/ folder contains the Quarto qmd files to reproduce the entire paper and supplementary materials.\nThe repository is organized as an R package where:\nFunctions within the R folder and datasets are documented. You can access the documentation using ?simon for the dataset or ?accumulate_trials for a custom function.\nNotice that the data/raw/ folder contains the raw data but the original dataset from Psychopy has been cleaned removing the participant private ID that can be considered as a sensitive information. Any other processing step is contained in the scripts/01-pre-processing.R script."
+  },
+  {
+    "objectID": "index.html#scripts",
+    "href": "index.html#scripts",
+    "title": "AccumulateTrials",
+    "section": "Scripts",
+    "text": "Scripts\nThe scripts folder contains the main scripts used to clean and analyze the data. In particular:\n\n01-pre-processing.R: contains the pre-processing steps and creates the cleaned datasets.\n02-cumulative-model.R: import the cleaned data and fit the comulative models extracting all the relevant parameters\n03a-resampling.R: perform the subsampling analysis of the main models. Notice that the script is meant to be run in parallel using a cluster with 70 cores. In interactive mode the script runs serially but computations time could be really proebitive. In parallel with 70 cores the resampling took roughly 13 hours.\n03b-res-resampling.R: is a simple pre-processing script that remove large columns from the main output for faster importing"
+  },
+  {
+    "objectID": "index.html#using-the-project",
+    "href": "index.html#using-the-project",
+    "title": "AccumulateTrials",
+    "section": "Using the project",
+    "text": "Using the project\nThe best way to use the project and reproduce the analyses is cloning or downloading the repository then opening the Rproj file with R Studio or opening the main folder with any other IDE.\nRelevant R packages are managed using renv and the .Rprofile file will try to activate the renv envinronment and you will be prompted to install the correct version of the packages.\nThen you can simply run devtools::load_all() to load functions and data and run the scripts. The suggestion is to run the script using Rscript from the terminal to evaluate each step into an isolated environment."
+  },
+  {
+    "objectID": "index.html#paper",
+    "href": "index.html#paper",
+    "title": "AccumulateTrials",
+    "section": "Paper",
+    "text": "Paper\nThe paper/ folder contains the paper.qmd and supplementary.qmd Quarto files to render the paper and the supplementary materials. The full project can be rendered using quarto render from the root folder. The paper is created using the apaquarto extension."
   },
   {
     "objectID": "paper/paper.html#trial-accumulation-and-non-stationarity",
@@ -54,12 +82,5 @@
     "title": "‘The More the Trials, the Stronger the Effect’. Fact or Myth? Evidence from Classical Experimental Psychology Paradigms",
     "section": "Participant subsampling",
     "text": "Participant subsampling\nFigure 7 shows the cumulative trajectory of the fixed condition estimate and its standard error under different participant sample sizes. As expected, given the subsampling from the complete pool of subjects, the trends are the same regardless of the number of participants. The standard error stabilization on the other side is slower but following the same pattern. For an experiment with 15 or 50 subjects, in the first half of the trials there is a clear stabilization of the gain in precision."
-  },
-  {
-    "objectID": "paper/supplementary.html",
-    "href": "paper/supplementary.html",
-    "title": "‘The More the Trials, the Stronger the Effect’. Fact or Myth? Evidence from Classical Experimental Psychology Paradigms",
-    "section": "",
-    "text": "Log models"
   }
 ]
