@@ -5,6 +5,7 @@ library(tidyr)
 library(lme4)
 library(emmeans)
 library(broom.mixed)
+library(pbapply)
 devtools::load_all()
 
 # Data cleaning ------------------------------------------------------------
@@ -15,13 +16,13 @@ clean_task <- function(data) {
     filter(correct == 1) |>
 
     # Remove trials without congruence information
-    drop_na(congruence)
+    drop_na(cond)
 
-  # Treat congruence as a factor
-  data$congruence <- factor(data$congruence)
+  # Treat congruence/switch as a factor
+  data$cond <- factor(data$cond)
 
   # Sum-to-zero coding scaled as -0.5 / 0.5
-  contrasts(data$congruence) <- -contr.sum(2) / 2
+  contrasts(data$cond) <- -contr.sum(2) / 2
 
   data
 }
@@ -31,7 +32,7 @@ clean_task <- function(data) {
 
 fit_model <- function(data, calc.derivs = TRUE) {
   lmer(
-    rt ~ congruence + (congruence | id),
+    rt ~ cond + (cond | id),
     data = data,
     control = lmerControl(
       optimizer = "bobyqa",
@@ -44,7 +45,7 @@ fit_model_log <- function(data, calc.derivs = TRUE) {
   data$lrt <- log(data$rt)
 
   lmer(
-    lrt ~ congruence + (congruence | id),
+    lrt ~ cond + (cond | id),
     data = data,
     control = lmerControl(
       optimizer = "bobyqa",
@@ -62,7 +63,7 @@ get_model_params <- function(x) {
 get_model_emmeans <- function(x) {
   em <- suppressMessages(
     suppressWarnings(
-      emmeans(x, pairwise ~ congruence)
+      emmeans(x, pairwise ~ cond)
     )
   )
 
@@ -128,8 +129,8 @@ tasks_clean <- tasks_clean |>
 
 # Fit one mixed-effects model for each task and cumulative-trial block.
 
-tasks_clean$fit <- lapply(tasks_clean$data, fit_model)
-tasks_clean$fit_log <- lapply(tasks_clean$data, fit_model_log)
+tasks_clean$fit <- pblapply(tasks_clean$data, fit_model)
+tasks_clean$fit_log <- pblapply(tasks_clean$data, fit_model_log)
 
 # Extract model summaries --------------------------------------------------
 
@@ -152,6 +153,22 @@ tasks_clean <- tasks_clean |>
     .by = task
   )
 
+# Cumulative model by-subject ---------------------------------------------
+
+tasks_clean_by_subj <- tasks_clean |>
+    select(task, data, trial) |>
+    unnest(data) |>
+    group_by(task, id, trial) |>
+    nest() |>
+    ungroup()
+
+tasks_clean_by_subj$fit <- pbapply::pblapply(tasks_clean_by_subj$data, function(x){
+    fit <- lm(rt ~ cond, data = x, contrasts = list(cond = -contr.sum(2)/2))
+    res <- tidy(fit, conf.int = TRUE)
+    add_row(res, term = "sigma", estimate = sigma(fit))
+})
+
+
 # Save output ---------------------------------------------------------------
 
 tasks_clean_main <- select(tasks_clean, -ends_with("log"))
@@ -159,3 +176,6 @@ tasks_clean_log <- select(tasks_clean, -c(emmeans, es, params, fit))
 
 saveRDS(tasks_clean_main, "objects/task_cum.rds")
 saveRDS(tasks_clean_log, "objects/task_cum_log.rds")
+saveRDS(select(tasks_clean_main, trial, params, emmeans, es), "shiny/data.rds")
+saveRDS(tasks_clean_by_subj, "objects/task_cum_by_subj.rds")
+saveRDS(tasks_clean_by_subj, "shiny/data_by_subj.rds")

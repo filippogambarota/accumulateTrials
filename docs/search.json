@@ -4,7 +4,7 @@
     "href": "paper/supplementary.html",
     "title": "‘The More the Trials, the Stronger the Effect’. Fact or Myth? Evidence from Classical Experimental Psychology Paradigms",
     "section": "",
-    "text": "Log-normal model\nIn this section we include the results of the same cumulative models presented in the main paper but using a log tranformations of the reaction times. We decided to present the raw reaction times to improve the intepretability of the model parameters, in particular the variance decomposition."
+    "text": "Log-normal model\nIn this section we include the results of the same cumulative models presented in the main paper but using a log tranformations of the reaction times. We decided to present the raw reaction times to improve the intepretability of the model parameters, in particular the variance decomposition.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nBy-subject cumulative effect\nWe computed also a by-subject cumulative effect applying the same model to each subject."
   },
   {
     "objectID": "index.html",

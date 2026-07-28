@@ -25,9 +25,9 @@ N_vec <- c(15, 50, 100)
 
 fit_model <- function(data, calc.derivs = FALSE) {
   lmer(
-    rt ~ congruence + (congruence | id),
+    rt ~ cond + (condcond | id),
     data = data,
-    contrasts = list(congruence = -contr.sum(2) / 2),
+    contrasts = list(cond = -contr.sum(2) / 2),
     control = lmerControl(
       optimizer = "bobyqa",
       calc.derivs = calc.derivs

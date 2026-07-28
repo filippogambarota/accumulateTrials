@@ -156,7 +156,7 @@ block2trial <- function(x, start = 32, step = 5) {
 #' westfall_d(fit, term = "congruence1")
 #'
 #' @export
-westfall_d <- function(model, term = "congruencei") {
+westfall_d <- function(model, term = "condi") {
   beta <- lme4::fixef(model)[term]
 
   vv <- insight::get_variance(model)

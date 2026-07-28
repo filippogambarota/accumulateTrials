@@ -29,3 +29,14 @@ Then you can run `devtools::load_all()` to load the functions and datasets befor
 ## Paper
 
 The `paper/` folder contains the `paper.qmd` and `supplementary.qmd` Quarto files used to render the manuscript and the supplementary materials. The full project can be rendered with `quarto render` from the root folder. The paper is created using the [`apaquarto`](https://github.com/wjschne/apaquarto) extension.
+
+## Data problems and notes
+
+<!-- TODO check this section -->
+
+We found some problem in the data collection scritps that we fixed:
+
+- In the `snarc` dataset the Psychopy script was wrongly programmed inverting the congruent/incongruent labels but the actual conditions are correct. In the `01-pre-processing.R` script we fixed the error simply recoding the two conditions.
+- In the `tswitch` some conditions has been wrongly created. <!-- TODO add some details here -->.
+
+In addition, for the `tswitch` task the relevant condition is the `switch` column indicating the type of trial. For consistency with the scripts and other models we called this column `condition` even if is not a congruent/incongruent case as for the other two tasks.

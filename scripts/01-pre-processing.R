@@ -5,7 +5,7 @@ library(tidyr)
 
 # General preprocessing function ------------------------------------------
 
-pre_processing <- function(data, out_rt = Inf, out_trials = Inf, acc_th = 0.8) {
+pre_processing <- function(data, min_rt = 0, max_rt = Inf, out_trials = Inf, acc_th = 0.8) {
   out <- data |>
 
     # Standardize reaction-time column name
@@ -26,7 +26,7 @@ pre_processing <- function(data, out_rt = Inf, out_trials = Inf, acc_th = 0.8) {
     ungroup() |>
 
     # Remove RT outliers
-    filter(rt < out_rt) |>
+    filter(rt <= max_rt & rt >= min_rt) |>
 
     # Compute participant accuracy
     group_by(id) |>
@@ -38,13 +38,15 @@ pre_processing <- function(data, out_rt = Inf, out_trials = Inf, acc_th = 0.8) {
 
     # Keep common columns across tasks
     select(
-      id,
-      Congruence,
-      correct = Correct,
-      acc,
-      rt,
-      ntrial
-    )
+          id,
+          any_of("Congruence"),
+          cond,
+          correct = Correct,
+          acc,
+          rt,
+          ntrial
+      )
+
   names(out) <- tolower(names(out))
   out
 }
@@ -58,35 +60,44 @@ tswitch <- read.csv("data/raw/tswitch-raw.csv")
 
 # Harmonize congruence variable -------------------------------------------
 
+simon$cond <- simon$Congruence
+
 # In task switching, congruence is derived from the Switch variable.
 # Switch == 1 is recoded as "c"; Switch == 0 is recoded as "i".
-tswitch$Congruence <- ifelse(tswitch$Switch == 1, "i", "c")
+tswitch$cond <- ifelse(tswitch$Switch == 1, "i", "c")
 
 # The SNARC has an error in the labels of congruent and incogruent
 # we simply have to switch the labels
-snarc$Congruence <- ifelse(snarc$Congruence == "i", "c", "i")
+snarc$cond <- ifelse(snarc$Congruence == "i", "c", "i")
 
 # Apply preprocessing ------------------------------------------------------
 
 simon_clean <- pre_processing(
   simon,
-  out_rt = 1200,
+  min_rt = 150,
+  max_rt = 1500,
   out_trials = 320
 )
 
 snarc_clean <- pre_processing(
   snarc,
-  out_rt = 1200
+  min_rt = 150,
+  max_rt = 1500,
 )
 
 tswitch_clean <- pre_processing(
   tswitch,
-  out_rt = 1200,
+  min_rt = 150,
+  max_rt = 1500,
   out_trials = 330
 )
 
 # Save clean data ----------------------------------------------------------
 
-saveRDS(simon_clean, "data/simon.rds")
-saveRDS(snarc_clean, "data/snarc.rds")
-saveRDS(tswitch_clean, "data/tswitch.rds")
+simon <- simon_clean
+snarc <- snarc_clean
+tswitch <- tswitch_clean
+
+save(simon, file = "data/simon.rda")
+save(snarc, file = "data/snarc.rda")
+save(tswitch, file = "data/tswitch.rda")
