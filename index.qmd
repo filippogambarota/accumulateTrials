@@ -3,4 +3,6 @@ title: "AccumulateTrials"
 format: html
 ---
 
+This site documents the reproducible materials for the paper. Use the links above to access the manuscript and supplementary materials.
+
 {{< include README.md >}}

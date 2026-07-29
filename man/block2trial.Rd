@@ -4,15 +4,20 @@
 \alias{block2trial}
 \title{Convert block indices to cumulative trial numbers}
 \usage{
-block2trial(x, start = 32, step = 5)
+block2trial(x, start = 32, step = 5, max_trial = NULL)
 }
 \arguments{
-\item{x}{A vector of block indices. Only the length of \code{x} is used.}
+\item{x}{Integer vector of block indices.}
 
 \item{start}{Integer. Number of trials in the first block. Default is \code{32}.}
 
 \item{step}{Integer. Number of additional trials added after the first block.
 Default is \code{5}.}
+
+\item{max_trial}{Optional integer. Maximum cumulative trial count. When
+supplied, returned trial counts are capped at this value. This is useful
+when the final cumulative dataset contains all remaining trials but the
+maximum number of trials is not exactly on the \code{start + k * step} sequence.}
 }
 \value{
 An integer vector of cumulative trial counts.
@@ -21,7 +26,13 @@ An integer vector of cumulative trial counts.
 Converts a sequence of block indices into cumulative trial counts given an
 initial block size and a fixed step size for subsequent blocks.
 }
+\details{
+The function maps block \code{1} to \code{start}, block \code{2} to \code{start + step}, and so
+on. If \code{max_trial} is provided, values larger than \code{max_trial} are replaced
+with \code{max_trial}.
+}
 \examples{
 block2trial(1:5, start = 32, step = 5)
+block2trial(1:5, start = 32, step = 5, max_trial = 49)
 
 }

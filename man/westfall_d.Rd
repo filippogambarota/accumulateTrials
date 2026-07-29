@@ -4,13 +4,18 @@
 \alias{westfall_d}
 \title{Compute a Westfall-style standardized effect size from a mixed model}
 \usage{
-westfall_d(model, term = "congruencei")
+westfall_d(model, term = "condi", c = 0.5)
 }
 \arguments{
 \item{model}{A fitted mixed-effects model, typically of class \code{lmerMod}.}
 
 \item{term}{Character string. Name of the fixed-effect term to standardize.
-Default is \code{"congruence1"}.}
+Default is \code{"condi"}, the condition-effect term used by the cumulative
+model objects produced in \code{scripts/02-cumulative-model.R}.}
+
+\item{c}{Numeric. Contrast value used to weight the random-slope variance.
+Default is \code{0.5}, matching the centered two-condition coding used in this
+project.}
 }
 \value{
 A data frame with one row and the following columns:
@@ -36,18 +41,40 @@ This function is intended for mixed-effects models in which the fixed effect
 and variance components are on the same response scale. For reaction-time
 models fitted on raw RTs, the resulting standardized effect is expressed as
 the fixed effect divided by the model-implied total standard deviation.
+This follows the variance-component standardization described by Westfall,
+Kenny, and Judd (2014; BibTeX key: \code{Westfall2014-im}).
 
 The exact interpretation of \code{var_random} depends on the random-effects
 structure of the fitted model and on how \code{\link[insight:get_variance]{insight::get_variance()}} summarizes
 the model's random-effect variance.
 }
 \examples{
+set.seed(1)
+n_id <- 20
+n_rep <- 8
+dat <- expand.grid(
+  id = factor(seq_len(n_id)),
+  rep = seq_len(n_rep),
+  cond = factor(c("c", "i"))
+)
+id_intercept <- rnorm(n_id, 0, 50)
+id_slope <- rnorm(n_id, 30, 15)
+dat$rt <- 600 + id_intercept[dat$id] +
+  ifelse(dat$cond == "i", 40 + id_slope[dat$id], 0) +
+  rnorm(nrow(dat), 0, 30)
+
 fit <- lme4::lmer(
-  rt ~ congruence + (congruence | id),
-  data = dat,
-  contrasts = list(congruence = contr.sum(2) / 2)
+  rt ~ cond + (cond | id),
+  data = dat
 )
 
-westfall_d(fit, term = "congruence1")
+westfall_d(fit)
 
+}
+\references{
+Westfall, J., Kenny, D. A., & Judd, C. M. (2014). Statistical power and
+optimal design in experiments in which samples of participants respond to
+samples of stimuli. \emph{Journal of Experimental Psychology: General}, 143,
+2020-2045. https://doi.org/10.1037/xge0000014. BibTeX key:
+\code{Westfall2014-im}.
 }

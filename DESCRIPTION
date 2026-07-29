@@ -57,27 +57,28 @@ Imports:
     dplyr,
     insight,
     lme4,
-    svglite,
-    tibble,
-    utils
+    tibble
 Suggests:
     broom.mixed,
+    bslib,
     devtools,
     emmeans,
     flextable,
     furrr,
     future,
     ggplot2,
-    grid,
     here,
+    htmlwidgets,
     knitr,
     latex2exp,
     patchwork,
+    pbapply,
     purrr,
     scales,
+    shiny,
     stringr,
-    tidyr,
-    performance
+    svglite,
+    tidyr
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Config/roxygen2/version: 8.0.0

@@ -38,8 +38,22 @@ Singularity is evaluated separately with \code{\link[lme4:isSingular]{lme4::isSi
 model can be classified as converged but singular.
 }
 \examples{
+set.seed(1)
+n_id <- 20
+n_rep <- 8
+dat <- expand.grid(
+  id = factor(seq_len(n_id)),
+  rep = seq_len(n_rep),
+  cond = factor(c("c", "i"))
+)
+id_intercept <- rnorm(n_id, 0, 50)
+id_slope <- rnorm(n_id, 30, 15)
+dat$rt <- 600 + id_intercept[dat$id] +
+  ifelse(dat$cond == "i", 40 + id_slope[dat$id], 0) +
+  rnorm(nrow(dat), 0, 30)
+
 fit <- lme4::lmer(
-  rt ~ congruence + (congruence | id),
+  rt ~ cond + (cond | id),
   data = dat
 )
 

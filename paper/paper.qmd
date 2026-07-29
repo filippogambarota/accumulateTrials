@@ -3,16 +3,11 @@ title: "'The More the Trials, the Stronger the Effect'.  Fact or Myth?  Evidence
 shorttitle: "The More the Trials, the Stronger the Effect"
 author:
   - name: Giovanni Bruno
-    corresponding: true
     orcid: 0000-0002-2526-880X
     email: giovanni.bruno.2@unipd.it
     affiliations:
       - name: University of Padova
         department: Department of General Psychology
-        address: Via Venezia 8
-        city: Padova
-        region: PD
-        postal-code: 35131
   - name: Filippo Gambarota
     orcid: 0000-0002-6666-1747
     email: filippo.gambarota@unipd.it
@@ -32,11 +27,16 @@ author:
       - name: University of Padova
         department: Department of Developmental and Social Psychology
   - name: Simone Cutini
+    corresponding: true
     orcid: 0000-0001-6332-3219
     email: simone.cutini@unipd.it
     affiliations:
       - name: University of Padova
         department: Department of Developmental and Social Psychology
+        address: Via Venezia 8
+        city: Padova
+        region: PD
+        postal-code: 35131
 abstract: "This is my abstract."
 keywords: [keyword1, keyword2]
 author-note:
@@ -44,7 +44,8 @@ author-note:
     conflict of interest: The author has no conflict of interest to declare.
 bibliography: references.bib
 format:
-    apaquarto-html: default
+    #apaquarto-html: default
+    html: default
     apaquarto-pdf:
       floatsintext: false
 ---
@@ -67,6 +68,9 @@ library(flextable)
 library(stringr)
 devtools::load_all()
 
+source(here("paper", "_paper-utils.R"), local = knitr::knit_global())
+set_paper_theme()
+
 data(simon)
 data(snarc)
 data(tswitch)
@@ -78,99 +82,6 @@ clean_task <- function(data) {
   data |>
     filter(correct == 1) |>
     drop_na(congruence)
-}
-
-task_labels <- c(
-  simon = "Simon",
-  snarc = "SNARC",
-  tswitch = "Task-switching"
-)
-
-condition_labels <- function(task, congruence) {
-  case_when(
-    task == "tswitch" & congruence == "i" ~ "Switch",
-    task == "tswitch" & congruence == "c" ~ "Non-switch",
-    congruence == "i" ~ "Incongruent",
-    congruence == "c" ~ "Congruent"
-  )
-}
-
-# Common plot settings ------------------------------------------------------
-
-plot_base_size <- 11
-
-plot_lwd <- 0.65
-plot_lwd_strong <- 0.80
-plot_lwd_ref <- 0.45
-
-point_size <- 1.25
-point_alpha <- 0.35
-line_alpha <- 0.85
-ribbon_alpha <- 0.22
-
-common_theme <- function(base_size = plot_base_size) {
-  theme_minimal(base_size = base_size) +
-    theme(
-      text = element_text(size = base_size),
-
-      axis.title = element_text(face = "bold", size = base_size + 1),
-      axis.text = element_text(size = base_size - 1),
-
-      strip.text = element_text(face = "bold", size = base_size),
-      strip.background = element_rect(fill = "grey92", color = NA),
-
-      plot.title = element_text(
-        face = "bold",
-        size = base_size + 2,
-        hjust = 0.5,
-        margin = margin(b = 8)
-      ),
-      plot.subtitle = element_text(
-        size = base_size,
-        hjust = 0.5,
-        margin = margin(b = 8)
-      ),
-      plot.caption = element_text(size = base_size - 2, hjust = 0),
-
-      legend.title = element_blank(),
-      legend.text = element_text(size = base_size - 1),
-      legend.position = "bottom",
-
-      panel.grid.minor = element_blank(),
-      panel.grid.major = element_line(linewidth = 0.25),
-      panel.spacing = grid::unit(1.1, "lines"),
-
-      plot.margin = margin(6, 6, 6, 6)
-    )
-}
-
-theme_set(common_theme())
-
-update_geom_defaults("line", list(linewidth = plot_lwd, alpha = line_alpha))
-update_geom_defaults("smooth", list(linewidth = plot_lwd_strong))
-update_geom_defaults("point", list(size = point_size, alpha = point_alpha))
-update_geom_defaults("ribbon", list(alpha = ribbon_alpha, colour = NA))
-update_geom_defaults("boxplot", list(linewidth = plot_lwd_ref, outlier.size = 1.1))
-
-geom_paper_line <- function(..., linewidth = plot_lwd_strong, alpha = line_alpha) {
-  geom_line(..., linewidth = linewidth, alpha = alpha)
-}
-
-geom_paper_ribbon <- function(..., alpha = ribbon_alpha) {
-  geom_ribbon(..., alpha = alpha, colour = NA)
-}
-
-geom_paper_hline <- function(yintercept = 0, ...) {
-  geom_hline(
-    yintercept = yintercept,
-    linewidth = plot_lwd_ref,
-    linetype = "dashed",
-    ...
-  )
-}
-
-geom_paper_point <- function(..., size = point_size, alpha = point_alpha) {
-  geom_point(..., size = size, alpha = alpha)
 }
 
 knitr::opts_chunk$set(
@@ -541,7 +452,7 @@ es_cum <- tasks_cum |>
 
 t_cum <- tasks_cum |> 
   unnest(params) |> 
-  filter(term == "congruencei")
+  filter(term == "condi")
 
 es_t_cum <- left_join(
   select(es_cum, task, trial, d), 
@@ -563,108 +474,6 @@ es_t_cum |>
     y = NULL,
     x = "Cumulative trial"
   )
-```
-
-```{r}
-#| include: false
-
-term_titles <- list(
-  "(Intercept)" = TeX("$\\beta_0$"),
-  "congruence1" = TeX("$\\beta_1$"),
-  "congruencei" = TeX("$\\beta_1$"),
-  "sd__(Intercept)" = TeX("$\\sigma_P$"),
-  "sd__congruence1" = TeX("$\\sigma_{P \\times C}$"),
-  "sd__congruencei" = TeX("$\\sigma_{P \\times C}$"),
-  "sd__Observation" = TeX("$\\sigma_E$"),
-  "sigma" = TeX("$\\sigma_E$")
-)
-
-cum_plot <- function(data, x_limits = NULL, title = NULL) {
-  data <- data |>
-    mutate(
-      conf.low = if_else(is.na(conf.low), estimate, conf.low),
-      conf.high = if_else(is.na(conf.high), estimate, conf.high)
-    )
-
-  ggplot(data, aes(x = trial, y = estimate)) +
-    geom_paper_ribbon(aes(ymin = conf.low, ymax = conf.high)) +
-    geom_paper_line() +
-    scale_x_continuous(limits = x_limits) +
-    labs(title = title, x = "Cumulative trial", y = NULL)
-}
-
-emm_limits <- function(data) {
-  lower_name <- intersect(c("asymp.LCL", "lower.CL", "conf.low"), names(data))[1]
-  upper_name <- intersect(c("asymp.UCL", "upper.CL", "conf.high"), names(data))[1]
-  list(lower = lower_name, upper = upper_name)
-}
-
-plot_cumulative_task <- function(data, task_id, task_title) {
-  cum_dat <- data |>
-    filter(task == task_id) |>
-    unnest(params) |> 
-    filter(!str_detect(term, "^cor__"))
-
-  x_limits <- range(cum_dat$trial, na.rm = TRUE)
-
-  emm_dat <- data |>
-    filter(task == task_id) |>
-    unnest(emmeans) |> 
-    mutate(
-      congruence = condition_labels(task, congruence),
-      congruence = factor(
-        congruence,
-        levels = c("Congruent", "Incongruent", "Non-switch", "Switch")
-      )
-    ) |>
-    filter(contrast != "c - i")
-
-  ci_names <- emm_limits(emm_dat)
-
-  p_emm <- ggplot(
-    emm_dat,
-    aes(x = trial, y = emmean, color = congruence, fill = congruence)
-  ) +
-    geom_paper_ribbon(
-      aes(ymin = .data[[ci_names$lower]], ymax = .data[[ci_names$upper]]),
-      alpha = ribbon_alpha
-    ) +
-    geom_paper_line() +
-    scale_x_continuous(limits = x_limits) +
-    labs(title = NULL, x = "Cumulative trial", y = NULL) +
-    theme(
-      legend.position = "bottom",
-      legend.background = element_rect(fill = scales::alpha("white", 0.75), color = NA),
-      legend.key = element_rect(fill = scales::alpha("white", 0.75), color = NA)
-    )
-
-  make_term_plot <- function(term_candidates) {
-    term_present <- intersect(term_candidates, unique(cum_dat$term))[1]
-    if (is.na(term_present)) {
-      return(plot_spacer())
-    }
-
-    title <- term_titles[[term_present]]
-    if (is.null(title)) title <- term_present
-
-    cum_dat |>
-      filter(term == term_present) |>
-      cum_plot(x_limits = x_limits, title = title)
-  }
-
-  plot_list <- list(
-    make_term_plot(c("(Intercept)")),
-    make_term_plot(c("congruence1", "congruencei")),
-    p_emm,
-    make_term_plot(c("sd__(Intercept)")),
-    make_term_plot(c("sd__congruence1", "sd__congruencei")),
-    make_term_plot(c("sd__Observation", "sigma"))
-  )
-
-  wrap_plots(plot_list, ncol = 3) +
-    plot_layout(axes = "collect", axis_titles = "collect") +
-    plot_annotation(title = task_title)
-}
 ```
 
 ```{r}

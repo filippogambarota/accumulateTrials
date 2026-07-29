@@ -1,3 +1,9 @@
+# Fit cumulative mixed-effects models across increasing trial counts.
+#
+# Inputs:  data/simon.rda, data/snarc.rda, data/tswitch.rda
+# Outputs: objects/task_cum*.rds and shiny/data*.rds
+# Run after: scripts/01-pre-processing.R
+
 # Packages ----------------------------------------------------------------
 
 library(dplyr)
@@ -7,6 +13,8 @@ library(emmeans)
 library(broom.mixed)
 library(pbapply)
 devtools::load_all()
+
+lapply <- pblapply
 
 # Data cleaning ------------------------------------------------------------
 
@@ -149,7 +157,16 @@ tasks_clean$es <- lapply(tasks_clean$fit, westfall_d)
 
 tasks_clean <- tasks_clean |>
   mutate(
-    trial = block2trial(block, start = start, step = step),
+    trial = block2trial(
+      block,
+      start = start,
+      step = step,
+      max_trial = max(vapply(
+        data,
+        function(x) max(tabulate(match(x$id, unique(x$id)))),
+        integer(1)
+      ))
+    ),
     .by = task
   )
 

@@ -1,26 +1,3 @@
-#' Split a vector of trials into fixed-size blocks
-#'
-#' Assigns each element of a vector to a block of size `k`. The last block may
-#' contain fewer than `k` elements if the length of `x` is not an exact multiple
-#' of `k`.
-#'
-#' @param x A vector. Usually a vector of trial indices or observations.
-#' @param k Integer. The number of elements per block.
-#'
-#' @return An integer vector of the same length as `x`, giving the block number
-#'   for each element.
-#'
-#' @examples
-#' split_trials(1:10, k = 3)
-#'
-#' @export
-split_trials <- function(x, k) {
-  n <- ceiling(length(x) / k)
-  parts <- rep(1:n, each = k)
-  parts[1:length(x)]
-}
-
-
 #' Create cumulative trial datasets by participant
 #'
 #' Creates a list of cumulative datasets by progressively adding trials within
@@ -46,8 +23,18 @@ split_trials <- function(x, k) {
 #' The function assumes that `data` contains a trial-ordering variable named
 #' `ntrial`. Data are ordered by participant and `ntrial` before accumulation.
 #'
+#' The output is rebuilt with base `rbind`, so standard columns and factor
+#' classes are retained but custom attributes such as manually assigned factor
+#' contrasts should be checked or reset before fitting models.
+#'
 #' @examples
-#' dat_cum <- accumulate_trials(data = dat, .id = "id", start = 32, step = 5)
+#' dat <- data.frame(
+#'   id = rep(1:3, each = 5),
+#'   ntrial = rep(1:5, times = 3),
+#'   rt = seq_len(15)
+#' )
+#'
+#' dat_cum <- accumulate_trials(data = dat, .id = "id", start = 2, step = 2)
 #'
 #' @export
 accumulate_trials <- function(
@@ -97,20 +84,35 @@ accumulate_trials <- function(
 #' Converts a sequence of block indices into cumulative trial counts given an
 #' initial block size and a fixed step size for subsequent blocks.
 #'
-#' @param x A vector of block indices. Only the length of `x` is used.
+#' @param x Integer vector of block indices.
 #' @param start Integer. Number of trials in the first block. Default is `32`.
 #' @param step Integer. Number of additional trials added after the first block.
 #'   Default is `5`.
+#' @param max_trial Optional integer. Maximum cumulative trial count. When
+#'   supplied, returned trial counts are capped at this value. This is useful
+#'   when the final cumulative dataset contains all remaining trials but the
+#'   maximum number of trials is not exactly on the `start + k * step` sequence.
 #'
 #' @return An integer vector of cumulative trial counts.
 #'
+#' @details
+#' The function maps block `1` to `start`, block `2` to `start + step`, and so
+#' on. If `max_trial` is provided, values larger than `max_trial` are replaced
+#' with `max_trial`.
+#'
 #' @examples
 #' block2trial(1:5, start = 32, step = 5)
+#' block2trial(1:5, start = 32, step = 5, max_trial = 49)
 #'
 #' @export
-block2trial <- function(x, start = 32, step = 5) {
-  tt <- c(start, rep(step, length(x) - 1))
-  cumsum(tt)
+block2trial <- function(x, start = 32, step = 5, max_trial = NULL) {
+  trials <- start + (as.integer(x) - 1L) * step
+
+  if (!is.null(max_trial)) {
+    trials <- pmin(trials, max_trial)
+  }
+
+  as.integer(trials)
 }
 
 #' Compute a Westfall-style standardized effect size from a mixed model
@@ -122,7 +124,11 @@ block2trial <- function(x, start = 32, step = 5) {
 #'
 #' @param model A fitted mixed-effects model, typically of class `lmerMod`.
 #' @param term Character string. Name of the fixed-effect term to standardize.
-#'   Default is `"congruence1"`.
+#'   Default is `"condi"`, the condition-effect term used by the cumulative
+#'   model objects produced in `scripts/02-cumulative-model.R`.
+#' @param c Numeric. Contrast value used to weight the random-slope variance.
+#'   Default is `0.5`, matching the centered two-condition coding used in this
+#'   project.
 #'
 #' @return A data frame with one row and the following columns:
 #' \describe{
@@ -141,38 +147,60 @@ block2trial <- function(x, start = 32, step = 5) {
 #' and variance components are on the same response scale. For reaction-time
 #' models fitted on raw RTs, the resulting standardized effect is expressed as
 #' the fixed effect divided by the model-implied total standard deviation.
+#' This follows the variance-component standardization described by Westfall,
+#' Kenny, and Judd (2014; BibTeX key: `Westfall2014-im`).
 #'
 #' The exact interpretation of `var_random` depends on the random-effects
 #' structure of the fitted model and on how [insight::get_variance()] summarizes
 #' the model's random-effect variance.
 #'
+#' @references
+#' Westfall, J., Kenny, D. A., & Judd, C. M. (2014). Statistical power and
+#' optimal design in experiments in which samples of participants respond to
+#' samples of stimuli. *Journal of Experimental Psychology: General*, 143,
+#' 2020-2045. https://doi.org/10.1037/xge0000014. BibTeX key:
+#' `Westfall2014-im`.
+#'
 #' @examples
+#' set.seed(1)
+#' n_id <- 20
+#' n_rep <- 8
+#' dat <- expand.grid(
+#'   id = factor(seq_len(n_id)),
+#'   rep = seq_len(n_rep),
+#'   cond = factor(c("c", "i"))
+#' )
+#' id_intercept <- rnorm(n_id, 0, 50)
+#' id_slope <- rnorm(n_id, 30, 15)
+#' dat$rt <- 600 + id_intercept[dat$id] +
+#'   ifelse(dat$cond == "i", 40 + id_slope[dat$id], 0) +
+#'   rnorm(nrow(dat), 0, 30)
+#'
 #' fit <- lme4::lmer(
-#'   rt ~ congruence + (congruence | id),
-#'   data = dat,
-#'   contrasts = list(congruence = contr.sum(2) / 2)
+#'   rt ~ cond + (cond | id),
+#'   data = dat
 #' )
 #'
-#' westfall_d(fit, term = "congruence1")
+#' westfall_d(fit)
 #'
 #' @export
-westfall_d <- function(model, term = "condi") {
-  beta <- lme4::fixef(model)[term]
-
-  vv <- insight::get_variance(model)
-
-  total_var <- vv$var.random + vv$var.residual
-
-  d <- beta / sqrt(total_var)
-
-  data.frame(
-    term = term,
-    beta = unname(beta),
-    var_random = unname(vv$var.random),
-    var_residual = unname(vv$var.residual),
-    total_var = unname(total_var),
-    d = unname(d)
-  )
+westfall_d <- function(model, term = "condi", c = 0.5) {
+    b <- lme4::fixef(model)[term]
+    V <- insight::get_variance(model)
+    VP <- V$var.intercept
+    VPxC <- V$var.slope
+    VE <- V$var.residual
+    VT <- VP + VPxC*c^2 + VE
+    d <- b / sqrt(VT)
+    data.frame(
+        term = term,
+        b = unname(b),
+        d = unname(d),
+        VP = unname(VP),
+        VPxC = unname(VPxC),
+        VE = unname(VE),
+        VT = unname(VT)
+    )
 }
 
 #' Check convergence and singularity of a mixed-effects model
@@ -205,8 +233,22 @@ westfall_d <- function(model, term = "condi") {
 #' model can be classified as converged but singular.
 #'
 #' @examples
+#' set.seed(1)
+#' n_id <- 20
+#' n_rep <- 8
+#' dat <- expand.grid(
+#'   id = factor(seq_len(n_id)),
+#'   rep = seq_len(n_rep),
+#'   cond = factor(c("c", "i"))
+#' )
+#' id_intercept <- rnorm(n_id, 0, 50)
+#' id_slope <- rnorm(n_id, 30, 15)
+#' dat$rt <- 600 + id_intercept[dat$id] +
+#'   ifelse(dat$cond == "i", 40 + id_slope[dat$id], 0) +
+#'   rnorm(nrow(dat), 0, 30)
+#'
 #' fit <- lme4::lmer(
-#'   rt ~ congruence + (congruence | id),
+#'   rt ~ cond + (cond | id),
 #'   data = dat
 #' )
 #'

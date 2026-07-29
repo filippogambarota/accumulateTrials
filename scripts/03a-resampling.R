@@ -1,12 +1,17 @@
+# Resample participants within cumulative task datasets and refit models.
+#
+# Inputs:  objects/task_cum.rds
+# Outputs: objects/task_resampling.rds
+# Run after: scripts/02-cumulative-model.R
+
 # Packages ----------------------------------------------------------------
 
-library(here)
-library(lme4)
-library(furrr)
-library(future)
-library(broom.mixed)
-library(purrr)
-library(dplyr)
+require(lme4)
+require(furrr)
+require(future)
+require(broom.mixed)
+require(purrr)
+require(dplyr)
 devtools::load_all()
 
 # Reproducibility ----------------------------------------------------------
@@ -25,7 +30,7 @@ N_vec <- c(15, 50, 100)
 
 fit_model <- function(data, calc.derivs = FALSE) {
   lmer(
-    rt ~ cond + (condcond | id),
+    rt ~ cond + (cond | id),
     data = data,
     contrasts = list(cond = -contr.sum(2) / 2),
     control = lmerControl(
@@ -129,13 +134,16 @@ tasks_boot <- tasks |>
   select(task, block, trial, data) |>
   tidyr::expand_grid(N = N_vec)
 
-# Optional quick test subset
-# tasks_boot <- tasks_boot[1:10, ]
-
 # Parallel resampling ------------------------------------------------------
 
 if (!interactive()) {
-  plan(multisession, workers = 70)
+    workers <- as.integer(Sys.getenv("SLURM_CPUS_PER_TASK", "1"))
+    if (is.na(workers) || workers < 1L) {
+        workers <- 1L
+    }
+    future::plan(future::multicore, workers = workers)
+} else{
+    tasks_boot <- tasks_boot[1:10, ]
 }
 
 tasks_boot$res <- future_pmap(
@@ -147,7 +155,6 @@ tasks_boot$res <- future_pmap(
 if (!interactive()) {
   plan(sequential)
 }
-
 
 # Save output --------------------------------------------------------------
 

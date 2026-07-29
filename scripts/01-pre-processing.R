@@ -1,7 +1,14 @@
+# Pre-process raw behavioral data for the three tasks.
+#
+# Inputs:  data/raw/*-raw.csv
+# Outputs: data/simon.rda, data/snarc.rda, data/tswitch.rda
+# Run before: scripts/02-cumulative-model.R
+
 # Packages ----------------------------------------------------------------
 
 library(dplyr)
 library(tidyr)
+devtools::load_all()
 
 # General preprocessing function ------------------------------------------
 
@@ -62,12 +69,12 @@ tswitch <- read.csv("data/raw/tswitch-raw.csv")
 
 simon$cond <- simon$Congruence
 
-# In task switching, congruence is derived from the Switch variable.
-# Switch == 1 is recoded as "c"; Switch == 0 is recoded as "i".
+# In task switching, the analysis condition is derived from the Switch variable.
+# Switch == 1 is recoded as "i"; Switch == 0 is recoded as "c".
 tswitch$cond <- ifelse(tswitch$Switch == 1, "i", "c")
 
-# The SNARC has an error in the labels of congruent and incogruent
-# we simply have to switch the labels
+# The SNARC has an error in the labels of congruent and incongruent
+# trials, so we switch the labels.
 snarc$cond <- ifelse(snarc$Congruence == "i", "c", "i")
 
 # Apply preprocessing ------------------------------------------------------
@@ -83,6 +90,7 @@ snarc_clean <- pre_processing(
   snarc,
   min_rt = 150,
   max_rt = 1500,
+  out_trials = 320
 )
 
 tswitch_clean <- pre_processing(

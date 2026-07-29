@@ -5,17 +5,21 @@
 \alias{snarc}
 \title{SNARC Task Trial-Level Data}
 \format{
-A tibble with 67,615 rows and 6 variables:
+A tibble with 68,576 rows and 7 variables:
 \describe{
 \item{id}{Integer participant identifier.}
-\item{congruence}{Character condition code. \code{"c"} indicates congruent
-trials and \code{"i"} indicates incongruent trials, after correcting the raw
-congruence labels.}
+\item{congruence}{Character congruence code from the raw \code{Congruence}
+column. The raw SNARC labels are inverted relative to the analysis
+condition.}
+\item{cond}{Character analysis condition after correcting the inverted raw
+SNARC congruence labels. \code{"c"} indicates congruent trials and \code{"i"}
+indicates incongruent trials.}
 \item{correct}{Integer accuracy indicator, coded \code{1} for correct responses
 and \code{0} for incorrect responses.}
 \item{acc}{Numeric participant-level accuracy after preprocessing.}
 \item{rt}{Numeric reaction time in milliseconds.}
-\item{ntrial}{Integer trial index within participant after preprocessing.}
+\item{ntrial}{Integer cumulative trial index within participant, created
+before reaction-time filtering.}
 }
 }
 \source{
@@ -35,6 +39,6 @@ The data are harmonized from the raw SNARC task files by keeping common
 variables across tasks, correcting the congruence labels, removing
 participants below the accuracy threshold, and removing reaction-time
 outliers. Downstream cumulative models use the subset with \code{correct == 1}
-and non-missing \code{congruence}.
+and non-missing \code{cond}.
 }
 \keyword{internal}

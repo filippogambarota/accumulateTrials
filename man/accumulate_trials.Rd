@@ -35,8 +35,18 @@ that participant are retained.
 \details{
 The function assumes that \code{data} contains a trial-ordering variable named
 \code{ntrial}. Data are ordered by participant and \code{ntrial} before accumulation.
+
+The output is rebuilt with base \code{rbind}, so standard columns and factor
+classes are retained but custom attributes such as manually assigned factor
+contrasts should be checked or reset before fitting models.
 }
 \examples{
-dat_cum <- accumulate_trials(data = dat, .id = "id", start = 32, step = 5)
+dat <- data.frame(
+  id = rep(1:3, each = 5),
+  ntrial = rep(1:5, times = 3),
+  rt = seq_len(15)
+)
+
+dat_cum <- accumulate_trials(data = dat, .id = "id", start = 2, step = 2)
 
 }

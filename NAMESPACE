@@ -3,5 +3,4 @@
 export(accumulate_trials)
 export(block2trial)
 export(check_lmer_fit)
-export(split_trials)
 export(westfall_d)

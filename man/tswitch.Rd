@@ -5,17 +5,24 @@
 \alias{tswitch}
 \title{Task-Switching Trial-Level Data}
 \format{
-A tibble with 64,351 rows and 6 variables:
+A tibble with 65,844 rows and 7 variables:
 \describe{
 \item{id}{Integer participant identifier.}
-\item{congruence}{Character condition code derived from the raw switching
-variable. \code{"c"} indicates non-switch trials, \code{"i"} indicates switch
-trials, and \code{NA} indicates trials without a defined switch condition.}
+\item{congruence}{Character congruence code from the raw \code{Congruence}
+column, with values \code{"C"} and \code{"I"} and missing values for trials without
+a recorded congruence code. This column is retained from the raw data but
+is not the condition used in the cumulative models.}
+\item{cond}{Character analysis condition derived from the raw \code{Switch}
+column. \code{"c"} indicates non-switch trials (\code{Switch == 0}), \code{"i"}
+indicates switch trials (\code{Switch == 1}), and \code{NA} indicates trials
+without a defined switch condition.}
 \item{correct}{Integer accuracy indicator, coded \code{1} for correct responses
 and \code{0} for incorrect responses.}
 \item{acc}{Numeric participant-level accuracy after preprocessing.}
 \item{rt}{Numeric reaction time in milliseconds.}
-\item{ntrial}{Integer trial index within participant after preprocessing.}
+\item{ntrial}{Integer cumulative trial index within participant, created
+after removing participants with anomalous original trial counts and
+before reaction-time filtering.}
 }
 }
 \source{
@@ -36,6 +43,6 @@ analysis condition from the switching variable, keeping common variables
 across tasks, removing participants below the accuracy threshold, removing
 participants with inconsistent trial counts, and removing reaction-time
 outliers. Downstream cumulative models use the subset with \code{correct == 1}
-and non-missing \code{congruence}.
+and non-missing \code{cond}.
 }
 \keyword{internal}

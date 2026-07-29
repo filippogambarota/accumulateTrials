@@ -3,7 +3,9 @@ title: "'The More the Trials, the Stronger the Effect'. Fact or Myth? Evidence f
 subtitle: "Supplementary Materials"
 toc: true
 format:
-  pdf: default
+  pdf:
+    documentclass: article
+    papersize: a4
   html: default
 ---
 
@@ -20,6 +22,9 @@ library(latex2exp)
 library(stringr)
 library(patchwork)
 
+source(here("paper", "_paper-utils.R"), local = knitr::knit_global())
+set_paper_theme()
+
 knitr::opts_chunk$set(
   echo = FALSE,
   fig.align = "center",
@@ -30,176 +35,10 @@ knitr::opts_chunk$set(
   dpi = 300,
   out.width = "100%"
 )
-
-plot_base_size <- 11
-
-plot_lwd <- 0.65
-plot_lwd_strong <- 0.80
-plot_lwd_ref <- 0.45
-
-point_size <- 1.25
-point_alpha <- 0.35
-line_alpha <- 0.85
-ribbon_alpha <- 0.22
-
-common_theme <- function(base_size = plot_base_size) {
-  theme_minimal(base_size = base_size) +
-    theme(
-      text = element_text(size = base_size),
-
-      axis.title = element_text(
-        face = "bold",
-        size = base_size + 1
-      ),
-      axis.text = element_text(size = base_size - 1),
-
-      strip.text = element_text(
-        face = "bold",
-        size = base_size
-      ),
-      strip.background = element_rect(
-        fill = "grey92",
-        color = NA
-      ),
-
-      plot.title = element_text(
-        face = "bold",
-        size = base_size + 2,
-        hjust = 0.5,
-        margin = margin(b = 8)
-      ),
-      plot.subtitle = element_text(
-        size = base_size,
-        hjust = 0.5,
-        margin = margin(b = 8)
-      ),
-      plot.caption = element_text(
-        size = base_size - 2,
-        hjust = 0
-      ),
-
-      legend.title = element_blank(),
-      legend.text = element_text(size = base_size - 1),
-      legend.position = "bottom",
-
-      panel.grid.minor = element_blank(),
-      panel.grid.major = element_line(linewidth = 0.25),
-      panel.spacing = grid::unit(1.1, "lines"),
-
-      plot.margin = margin(6, 6, 6, 6)
-    )
-}
-
-theme_set(common_theme())
-
-update_geom_defaults(
-  "line",
-  list(linewidth = plot_lwd, alpha = line_alpha)
-)
-update_geom_defaults(
-  "smooth",
-  list(linewidth = plot_lwd_strong)
-)
-update_geom_defaults(
-  "point",
-  list(size = point_size, alpha = point_alpha)
-)
-update_geom_defaults(
-  "ribbon",
-  list(alpha = ribbon_alpha, colour = NA)
-)
-update_geom_defaults(
-  "boxplot",
-  list(linewidth = plot_lwd_ref, outlier.size = 1.1)
-)
-
-geom_paper_line <- function(
-    ...,
-    linewidth = plot_lwd_strong,
-    alpha = line_alpha) {
-  geom_line(
-    ...,
-    linewidth = linewidth,
-    alpha = alpha
-  )
-}
-
-geom_paper_ribbon <- function(
-    ...,
-    alpha = ribbon_alpha) {
-  geom_ribbon(
-    ...,
-    alpha = alpha,
-    colour = NA
-  )
-}
-
-geom_paper_hline <- function(yintercept = 0, ...) {
-  geom_hline(
-    yintercept = yintercept,
-    linewidth = plot_lwd_ref,
-    linetype = "dashed",
-    ...
-  )
-}
-
-geom_paper_point <- function(
-    ...,
-    size = point_size,
-    alpha = point_alpha) {
-  geom_point(
-    ...,
-    size = size,
-    alpha = alpha
-  )
-}
-
-task_labels <- c(
-  simon = "Simon",
-  snarc = "SNARC",
-  tswitch = "Task-switching"
-)
-
-condition_labels <- function(task, cond) {
-  case_when(
-    task == "tswitch" & cond == "i" ~ "Switch",
-    task == "tswitch" & cond == "c" ~ "Non-switch",
-    cond == "i" ~ "Incongruent",
-    cond == "c" ~ "Congruent"
-  )
-}
-
-term_titles <- c(
-  "(Intercept)" = TeX("$\\beta_0$", output = "character"),
-  "condi" = TeX("$\\beta_1$", output = "character"),
-  "cond1" = TeX("$\\beta_1$", output = "character"),
-  "sd__(Intercept)" = TeX("$\\sigma_P$", output = "character"),
-  "sd__cond1" = TeX(
-    "$\\sigma_{P \\times C}$",
-    output = "character"
-  ),
-  "sd__condi" = TeX(
-    "$\\sigma_{P \\times C}$",
-    output = "character"
-  ),
-  "sd__Observation" = TeX(
-    "$\\sigma_E$",
-    output = "character"
-  ),
-  "sigma" = TeX(
-    "$\\sigma_E$",
-    output = "character"
-  )
-)
-
-term_facet_labeller <- as_labeller(
-  term_titles,
-  default = label_parsed
-)
 ```
 
 ```{r}
-#| label: data
+#| label: load-supplementary-results
 #| cache: true
 
 res <- readRDS(
@@ -230,216 +69,8 @@ res_plot <- res |>
 In this section, we include the results of the same cumulative models presented in the main paper, but using a log transformation of reaction times. We decided to present raw reaction times in the main text to improve the interpretability of the model parameters, particularly the variance decomposition.
 
 ```{r}
-cum_plot <- function(
-    data,
-    x_limits = NULL,
-    title = NULL) {
-  data <- data |>
-    mutate(
-      conf.low = if_else(
-        is.na(conf.low),
-        estimate,
-        conf.low
-      ),
-      conf.high = if_else(
-        is.na(conf.high),
-        estimate,
-        conf.high
-      )
-    )
+#| label: fig-log-cum-simon
 
-  parsed_title <- if (is.null(title)) {
-    NULL
-  } else {
-    parse(text = title)[[1]]
-  }
-
-  ggplot(
-    data,
-    aes(
-      x = trial,
-      y = estimate
-    )
-  ) +
-    geom_paper_ribbon(
-      aes(
-        ymin = conf.low,
-        ymax = conf.high
-      )
-    ) +
-    geom_paper_line() +
-    scale_x_continuous(
-      limits = x_limits
-    ) +
-    labs(
-      title = parsed_title,
-      x = "Cumulative trial",
-      y = NULL
-    )
-}
-
-emm_limits <- function(data) {
-  lower_name <- intersect(
-    c(
-      "asymp.LCL",
-      "lower.CL",
-      "conf.low"
-    ),
-    names(data)
-  )[1]
-
-  upper_name <- intersect(
-    c(
-      "asymp.UCL",
-      "upper.CL",
-      "conf.high"
-    ),
-    names(data)
-  )[1]
-
-  list(
-    lower = lower_name,
-    upper = upper_name
-  )
-}
-
-plot_cumulative_task <- function(
-    data,
-    task_id,
-    task_title) {
-  cum_dat <- data |>
-    filter(task == task_id) |>
-    unnest(params) |>
-    filter(
-      !str_detect(term, "^cor__")
-    )
-
-  x_limits <- range(
-    cum_dat$trial,
-    na.rm = TRUE
-  )
-
-  emm_dat <- data |>
-    filter(task == task_id) |>
-    unnest(emmeans) |>
-    mutate(
-      cond = condition_labels(
-        task,
-        cond
-      ),
-      cond = factor(
-        cond,
-        levels = c(
-          "Congruent",
-          "Incongruent",
-          "Non-switch",
-          "Switch"
-        )
-      )
-    ) |>
-    filter(
-      contrast != "c - i"
-    )
-
-  ci_names <- emm_limits(emm_dat)
-
-  p_emm <- ggplot(
-    emm_dat,
-    aes(
-      x = trial,
-      y = emmean,
-      color = cond,
-      fill = cond
-    )
-  ) +
-    geom_paper_ribbon(
-      aes(
-        ymin = .data[[ci_names$lower]],
-        ymax = .data[[ci_names$upper]]
-      ),
-      alpha = ribbon_alpha
-    ) +
-    geom_paper_line() +
-    scale_x_continuous(
-      limits = x_limits
-    ) +
-    labs(
-      title = NULL,
-      x = "Cumulative trial",
-      y = NULL
-    ) +
-    theme(
-      legend.position = "bottom",
-      legend.background = element_rect(
-        fill = scales::alpha(
-          "white",
-          0.75
-        ),
-        color = NA
-      ),
-      legend.key = element_rect(
-        fill = scales::alpha(
-          "white",
-          0.75
-        ),
-        color = NA
-      )
-    )
-
-  make_term_plot <- function(term_candidates) {
-    term_present <- intersect(
-      term_candidates,
-      unique(cum_dat$term)
-    )[1]
-
-    if (is.na(term_present)) {
-      return(plot_spacer())
-    }
-
-    title <- term_titles[[term_present]]
-
-    if (is.null(title)) {
-      title <- term_present
-    }
-
-    cum_dat |>
-      filter(
-        term == term_present
-      ) |>
-      cum_plot(
-        x_limits = x_limits,
-        title = title
-      )
-  }
-
-  plot_list <- list(
-    make_term_plot("(Intercept)"),
-    make_term_plot(c("condi", "cond1")),
-    p_emm,
-    make_term_plot("sd__(Intercept)"),
-    make_term_plot(
-      c("sd__condi", "sd__cond1")
-    ),
-    make_term_plot(
-      c("sd__Observation", "sigma")
-    )
-  )
-
-  wrap_plots(
-    plot_list,
-    ncol = 3
-  ) +
-    plot_layout(
-      axes = "collect",
-      axis_titles = "collect"
-    ) +
-    plot_annotation(
-      title = task_title
-    )
-}
-```
-
-```{r}
 plot_cumulative_task(
   res_plot,
   "simon",
@@ -448,6 +79,8 @@ plot_cumulative_task(
 ```
 
 ```{r}
+#| label: fig-log-cum-snarc
+
 plot_cumulative_task(
   res_plot,
   "snarc",
@@ -456,6 +89,8 @@ plot_cumulative_task(
 ```
 
 ```{r}
+#| label: fig-log-cum-tswitch
+
 plot_cumulative_task(
   res_plot,
   "tswitch",
@@ -468,6 +103,8 @@ plot_cumulative_task(
 We also computed a by-subject cumulative effect by applying the same model separately to each participant. Clearly, we only have the estimation of $\beta_0$, $\beta_1$ and $\sigma_{E}$.
 
 ```{r}
+#| label: define-by-subject-plot
+
 plot_by_subject <- function(
     data,
     task_id) {
@@ -505,7 +142,9 @@ plot_by_subject <- function(
 ```
 
 ```{r}
+#| label: fig-by-subject-simon
 #| fig-height: 10
+
 plot_by_subject(
   res_by_subj,
   "simon"
@@ -513,7 +152,9 @@ plot_by_subject(
 ```
 
 ```{r}
+#| label: fig-by-subject-snarc
 #| fig-height: 10
+
 plot_by_subject(
   res_by_subj,
   "snarc"
@@ -521,7 +162,9 @@ plot_by_subject(
 ```
 
 ```{r}
+#| label: fig-by-subject-tswitch
 #| fig-height: 10
+
 plot_by_subject(
   res_by_subj,
   "tswitch"
