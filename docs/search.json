@@ -63,6 +63,13 @@
     "text": "Package functions\nThe package exports four project utilities:\n\naccumulate_trials(): creates cumulative datasets by progressively adding trials within participant.\nblock2trial(): converts cumulative block indices to trial counts.\nwestfall_d(): computes a Westfall-style standardized effect size from a mixed-effects model.\ncheck_lmer_fit(): summarizes convergence and singularity diagnostics for lme4 models.\n\nSee the corresponding help pages after devtools::load_all(), for example ?accumulate_trials."
   },
   {
+    "objectID": "paper/paper.html",
+    "href": "paper/paper.html",
+    "title": "‘The More the Trials, the Stronger the Effect’. Fact or Myth? Evidence from Classical Experimental Psychology Paradigms",
+    "section": "",
+    "text": "Warning\n\n\n\nThe paper is a work in progress!"
+  },
+  {
     "objectID": "paper/paper.html#trial-accumulation-and-non-stationarity",
     "href": "paper/paper.html#trial-accumulation-and-non-stationarity",
     "title": "‘The More the Trials, the Stronger the Effect’. Fact or Myth? Evidence from Classical Experimental Psychology Paradigms",
@@ -110,12 +117,5 @@
     "title": "‘The More the Trials, the Stronger the Effect’. Fact or Myth? Evidence from Classical Experimental Psychology Paradigms",
     "section": "Participant subsampling",
     "text": "Participant subsampling\nFigure 7 shows the cumulative trajectory of the fixed condition estimate and its standard error under different participant sample sizes. As expected, given the subsampling from the complete pool of subjects, the trends are the same regardless of the number of participants. The standard error stabilization on the other side is slower but following the same pattern. For an experiment with 15 or 50 subjects, in the first half of the trials there is a clear stabilization of the gain in precision.\n\n\n\n\n\n\n\n\nFigure 7: Participant-subsampling results for the cumulative condition effect. Lines represent average estimates across bootstrap samples. Shaded regions show the 2.5th and 97.5th percentiles."
-  },
-  {
-    "objectID": "paper/paper.html",
-    "href": "paper/paper.html",
-    "title": "‘The More the Trials, the Stronger the Effect’. Fact or Myth? Evidence from Classical Experimental Psychology Paradigms",
-    "section": "",
-    "text": "Warning\n\n\n\nThe paper is a work in progress!"
   }
 ]

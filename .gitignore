@@ -49,3 +49,6 @@ data/original/
 **/*.quarto_ipynb
 /.agents/
 /.codex/
+.rsync-backup/
+
+.rsync-backup/
