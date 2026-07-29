@@ -193,5 +193,5 @@ tasks_clean_log <- select(tasks_clean, -c(emmeans, es, params, fit))
 
 saveRDS(tasks_clean_main, "objects/task_cum.rds")
 saveRDS(tasks_clean_log, "objects/task_cum_log.rds")
-saveRDS(select(tasks_clean_main, trial, params, emmeans, es), "shiny/data.rds")
+saveRDS(select(tasks_clean_main, trial, task, params, emmeans, es), "shiny/data.rds")
 saveRDS(tasks_clean_by_subj, "objects/task_cum_by_subj.rds")
