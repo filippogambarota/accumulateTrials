@@ -12,6 +12,8 @@ website:
         text: paper
       - href: paper/supplementary.qmd
         text: supplementary
+      - href: https://filippogambarota-accumulatetrials.share.connect.posit.cloud
+        text: shiny
 
 execute:
   freeze: auto

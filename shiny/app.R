@@ -592,18 +592,28 @@ ui <- page_sidebar(
     conditionalPanel(
         condition = "input.main_tab === 'cumulative'",
         uiOutput("plot_header"),
-        plotOutput("main_plot", height = "560px")
+        plotOutput(
+            "main_plot",
+            height = "calc(100vh - 190px)"
+        )
     ),
     conditionalPanel(
         condition = "input.main_tab === 'power'",
         navset_card_tab(
+            height = "calc(100vh - 145px)",
             nav_panel(
                 "Power curve",
-                plotOutput("power_plot", height = "540px")
+                plotOutput(
+                    "power_plot",
+                    height = "calc(100vh - 225px)"
+                )
             ),
             nav_panel(
                 "Effect pattern",
-                plotOutput("power_effect_plot", height = "540px")
+                plotOutput(
+                    "power_effect_plot",
+                    height = "calc(100vh - 225px)"
+                )
             )
         )
     )
